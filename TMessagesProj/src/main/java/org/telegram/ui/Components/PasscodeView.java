@@ -71,6 +71,9 @@ import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.support.fingerprint.FingerprintManagerCompat;
+import org.telegram.shieldgram.ShieldBiometricHelper;
+import org.telegram.shieldgram.ShieldGramConfig;
+import org.telegram.shieldgram.ShieldPatternView;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.blur3.BlurredBackgroundDrawableViewFactory;
 import org.telegram.ui.Components.blur3.drawable.color.BlurredBackgroundProviderBuilder;
@@ -122,8 +125,13 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
         }
     }
 
+    private int getTargetPinDigits() {
+        return SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PIN6 ? 6 : 4;
+    }
+
     private class AnimatingTextView extends FrameLayout {
 
+        private static final int MAX_DIGITS = 6;
         private ArrayList<TextView> characterTextViews;
         private ArrayList<TextView> dotTextViews;
         private StringBuilder stringBuilder;
@@ -133,15 +141,15 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
 
         public AnimatingTextView(Context context) {
             super(context);
-            characterTextViews = new ArrayList<>(4);
-            dotTextViews = new ArrayList<>(4);
-            stringBuilder = new StringBuilder(4);
+            characterTextViews = new ArrayList<>(MAX_DIGITS);
+            dotTextViews = new ArrayList<>(MAX_DIGITS);
+            stringBuilder = new StringBuilder(MAX_DIGITS);
 
-            for (int a = 0; a < 4; a++) {
+            for (int a = 0; a < MAX_DIGITS; a++) {
                 TextView textView = new TextView(context);
                 textView.setTextColor(0xffffffff);
                 textView.setTypeface(AndroidUtilities.bold());
-                textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 36);
+                textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 34);
                 textView.setGravity(Gravity.CENTER);
                 textView.setAlpha(0);
                 textView.setPivotX(AndroidUtilities.dp(25));
@@ -152,7 +160,7 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
                 textView = new TextView(context);
                 textView.setTextColor(0xffffffff);
                 textView.setTypeface(AndroidUtilities.bold());
-                textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 36);
+                textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 34);
                 textView.setGravity(Gravity.CENTER);
                 textView.setAlpha(0);
                 textView.setText(DOT);
@@ -164,11 +172,13 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
         }
 
         private int getXForTextView(int pos) {
-            return (getMeasuredWidth() - stringBuilder.length() * dp(30)) / 2 + pos * dp(30) - dp(10);
+            int step = stringBuilder.length() > 4 ? dp(26) : dp(30);
+            return (getMeasuredWidth() - stringBuilder.length() * step) / 2 + pos * step - dp(10);
         }
 
         public void appendCharacter(String c) {
-            if (stringBuilder.length() == 4) {
+            int maxLen = getTargetPinDigits();
+            if (stringBuilder.length() >= maxLen) {
                 return;
             }
             try {
@@ -196,7 +206,7 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
             animators.add(ObjectAnimator.ofFloat(textView, View.SCALE_Y, 0, 1));
             animators.add(ObjectAnimator.ofFloat(textView, View.TRANSLATION_Y, dp(20), 0));
 
-            for (int a = newPos + 1; a < 4; a++) {
+            for (int a = newPos + 1; a < MAX_DIGITS; a++) {
                 textView = characterTextViews.get(a);
                 if (textView.getAlpha() != 0) {
                     animators.add(ObjectAnimator.ofFloat(textView, View.SCALE_X, 0));
@@ -306,7 +316,7 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
                 stringBuilder.deleteCharAt(deletingPos);
             }
 
-            for (int a = deletingPos; a < 4; a++) {
+            for (int a = deletingPos; a < MAX_DIGITS; a++) {
                 TextView textView = characterTextViews.get(a);
                 if (textView.getAlpha() != 0) {
                     animators.add(ObjectAnimator.ofFloat(textView, View.SCALE_X, 0));
@@ -379,7 +389,7 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
             if (animated) {
                 ArrayList<Animator> animators = new ArrayList<>();
 
-                for (int a = 0; a < 4; a++) {
+                for (int a = 0; a < MAX_DIGITS; a++) {
                     TextView textView = characterTextViews.get(a);
                     if (textView.getAlpha() != 0) {
                         animators.add(ObjectAnimator.ofFloat(textView, View.SCALE_X, 0));
@@ -408,7 +418,7 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
                 });
                 currentAnimation.start();
             } else {
-                for (int a = 0; a < 4; a++) {
+                for (int a = 0; a < MAX_DIGITS; a++) {
                     characterTextViews.get(a).setAlpha(0);
                     dotTextViews.get(a).setAlpha(0);
                 }
@@ -428,7 +438,7 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
                 currentAnimation = null;
             }
 
-            for (int a = 0; a < 4; a++) {
+            for (int a = 0; a < MAX_DIGITS; a++) {
                 if (a < stringBuilder.length()) {
                     TextView textView = characterTextViews.get(a);
                     textView.setAlpha(0);
@@ -459,6 +469,12 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
     private TextView subtitleView;
     private FrameLayout numbersContainer;
     public FrameLayout numbersFrameLayout;
+    private LinearLayout patternContainer;
+    private ShieldPatternView patternView;
+    private TextView patternSubtitleView;
+    private PasscodeButton patternBiometricButton;
+    private String lastPatternCode = "";
+    private ShieldBiometricHelper.CancellationHandle activeBiometricHandle;
     private ArrayList<TextView> numberTextViews;
     private ArrayList<TextView> lettersTextViews;
     private ArrayList<FrameLayout> numberFrameLayouts;
@@ -717,7 +733,8 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (passwordEditText.length() == 4 && SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PIN) {
+                int targetLen = getTargetPinDigits();
+                if (passwordEditText.length() == targetLen && (SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PIN || SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PIN6)) {
                     processDone(false);
                 }
             }
@@ -945,7 +962,13 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
                     }
                 }
                 // after the background step of the last digit, so a wrong code can turn the background back smoothly
-                if (passwordEditText2.length() == 4) {
+                int targetDigits = getTargetPinDigits();
+                int currentLen = passwordEditText2.length();
+                if (currentLen == targetDigits) {
+                    processDone(false);
+                } else if (isAppLock() && targetDigits == 6 && currentLen == 4
+                        && ShieldGramConfig.checkDuressPasscode(passwordEditText2.getString())
+                        && !SharedConfig.checkPasscode(passwordEditText2.getString())) {
                     processDone(false);
                 }
             });
@@ -955,6 +978,65 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
             FrameLayout frameLayout = numberFrameLayouts.get(a);
             numbersFrameLayout.addView(frameLayout, LayoutHelper.createFrame(BUTTON_SIZE, BUTTON_SIZE, Gravity.TOP | Gravity.LEFT));
         }
+
+        // ShieldGram 3x3 Cyber Pattern Lock Overlay Container
+        patternContainer = new LinearLayout(context);
+        patternContainer.setOrientation(LinearLayout.VERTICAL);
+        patternContainer.setGravity(Gravity.CENTER_HORIZONTAL);
+        patternContainer.setClipChildren(false);
+        patternContainer.setVisibility(GONE);
+
+        TextView patternTitleView = new TextView(context);
+        patternTitleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15.5f);
+        patternTitleView.setTypeface(AndroidUtilities.bold());
+        patternTitleView.setTextColor(0xFFFFFFFF);
+        patternTitleView.setGravity(Gravity.CENTER);
+        patternTitleView.setText(LocaleController.getString(R.string.ShieldUnlockDrawPattern));
+        patternContainer.addView(patternTitleView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL, 16, 0, 16, 4));
+
+        patternSubtitleView = new TextView(context);
+        patternSubtitleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13.5f);
+        patternSubtitleView.setTextColor(0xB8E2E8F0);
+        patternSubtitleView.setGravity(Gravity.CENTER);
+        patternSubtitleView.setText(LocaleController.getString(R.string.ShieldDrawPatternSubtitle));
+        patternContainer.addView(patternSubtitleView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL, 16, 0, 16, 6));
+
+        patternView = new ShieldPatternView(context, true);
+        patternView.setOnPatternListener(new ShieldPatternView.OnPatternListener() {
+            @Override
+            public void onPatternStart() {
+            }
+
+            @Override
+            public void onPatternCleared() {
+            }
+
+            @Override
+            public void onPatternComplete(@NonNull String patternCode, int nodeCount) {
+                if (dismissing) {
+                    return;
+                }
+                if (nodeCount < ShieldPatternView.MIN_PATTERN_NODES) {
+                    patternView.setPatternState(ShieldPatternView.STATE_ERROR, true);
+                    onPasscodeError();
+                    return;
+                }
+                lastPatternCode = patternCode;
+                processDone(false);
+            }
+        });
+        patternContainer.addView(patternView, LayoutHelper.createLinear(256, 256, Gravity.CENTER_HORIZONTAL));
+
+        patternBiometricButton = new PasscodeButton(context);
+        ScaleStateListAnimator.apply(patternBiometricButton, .15f, 1.5f);
+        patternBiometricButton.setBackground(createGlass(patternBiometricButton));
+        patternBiometricButton.setForeground(Theme.createSimpleSelectorRoundRectDrawable(dp(30), 0, 0x26ffffff));
+        patternBiometricButton.setImage(R.drawable.ic_sg_face_id);
+        patternBiometricButton.setOnClickListener(v -> checkFingerprint());
+        patternContainer.addView(patternBiometricButton, LayoutHelper.createLinear(BUTTON_SIZE, BUTTON_SIZE, Gravity.CENTER_HORIZONTAL, 0, 8, 0, 0));
+
+        numbersContainer.addView(patternContainer, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.TOP | Gravity.CENTER_HORIZONTAL));
+
         checkFingerprintButton();
     }
 
@@ -1091,15 +1173,27 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
         return true;
     }
 
+    private boolean isPinMode() {
+        return SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PIN
+                || SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PIN6;
+    }
+
+    private boolean isPatternMode() {
+        return SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PATTERN;
+    }
+
     protected void processDone(boolean fingerprint) {
         if (dismissing || getVisibility() != VISIBLE) return;
+        boolean unlockedViaDuress = false;
         if (!fingerprint) {
             if (SharedConfig.passcodeRetryInMs > 0) {
                 return;
             }
             String password = "";
-            if (SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PIN) {
+            if (isPinMode()) {
                 password = passwordEditText2.getString();
+            } else if (isPatternMode()) {
+                password = lastPatternCode;
             } else if (SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PASSWORD) {
                 password = passwordEditText.getText().toString();
             }
@@ -1107,19 +1201,29 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
                 onPasscodeError();
                 return;
             }
-            if (!SharedConfig.checkPasscode(password)) {
+            boolean primaryMatched = SharedConfig.checkPasscode(password);
+            if (!primaryMatched && isAppLock() && ShieldGramConfig.checkDuressPasscode(password)) {
+                unlockedViaDuress = true;
+            } else if (!primaryMatched) {
                 SharedConfig.increaseBadPasscodeTries();
                 if (SharedConfig.passcodeRetryInMs > 0) {
                     checkRetryTextView();
                 }
                 passwordEditText.setText("");
                 passwordEditText2.eraseAllCharacters(true);
+                lastPatternCode = "";
+                if (patternView != null && isPatternMode()) {
+                    patternView.setPatternState(ShieldPatternView.STATE_ERROR, true);
+                }
                 onPasscodeError();
                 if (backgroundDrawable instanceof MotionBackgroundDrawable) {
                     rotateBackgroundBack((MotionBackgroundDrawable) backgroundDrawable);
                 }
                 return;
             }
+        }
+        if (isPatternMode() && patternView != null && !fingerprint) {
+            patternView.setPatternState(ShieldPatternView.STATE_SUCCESS, false);
         }
         dismissing = true;
         onPause();
@@ -1133,6 +1237,11 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
 
         if (isAppLock()) {
             SharedConfig.appLocked = false;
+            if (unlockedViaDuress) {
+                ShieldGramConfig.triggerDuressUnlock();
+            } else {
+                ShieldGramConfig.clearDuressSessionOnPrimaryUnlock();
+            }
         }
         SharedConfig.saveConfig();
         if (isAppLock()) {
@@ -1186,6 +1295,10 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
                     hideAnimator = null;
                     passwordEditText.setText("");
                     passwordEditText2.eraseAllCharacters(false);
+                    lastPatternCode = "";
+                    if (patternView != null) {
+                        patternView.clearPattern();
+                    }
                     setVisibility(View.GONE);
                     onAnimationUpdate(shownT = 0f);
                     setAlpha(0f);
@@ -1296,6 +1409,10 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
 
     public void onPause() {
         AndroidUtilities.cancelRunOnUIThread(checkRunnable);
+        if (activeBiometricHandle != null) {
+            activeBiometricHandle.cancel();
+            activeBiometricHandle = null;
+        }
     }
 
     private KeyboardNotifier keyboardNotifier;
@@ -1345,32 +1462,40 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
             pinAnimator.cancel();
         }
         pinShown = show;
-        pinAnimator = ValueAnimator.ofFloat(numbersFrameLayout.getAlpha(), show ? 1f : 0f);
+        final View activeInputPanel = isPatternMode() ? patternContainer : numbersFrameLayout;
+        if (patternView != null) {
+            patternView.setInputEnabled(show);
+        }
+        pinAnimator = ValueAnimator.ofFloat(activeInputPanel.getAlpha(), show ? 1f : 0f);
         pinAnimator.addUpdateListener(anm -> {
             final float t = (float) anm.getAnimatedValue();
-            numbersFrameLayout.setScaleX(AndroidUtilities.lerp(.8f, 1f, t));
-            numbersFrameLayout.setScaleY(AndroidUtilities.lerp(.8f, 1f, t));
-            numbersFrameLayout.setAlpha(AndroidUtilities.lerp(0f, 1f, t));
+            activeInputPanel.setScaleX(AndroidUtilities.lerp(.85f, 1f, t));
+            activeInputPanel.setScaleY(AndroidUtilities.lerp(.85f, 1f, t));
+            activeInputPanel.setAlpha(AndroidUtilities.lerp(0f, 1f, t));
 
             passcodeTextView.setScaleX(AndroidUtilities.lerp(1f, .9f, t));
             passcodeTextView.setScaleY(AndroidUtilities.lerp(1f, .9f, t));
             passcodeTextView.setAlpha(AndroidUtilities.lerp(1f, 0f, t));
 
-            passwordEditText2.setAlpha(AndroidUtilities.lerp(0f, 1f, t));
+            if (isPinMode()) {
+                passwordEditText2.setAlpha(AndroidUtilities.lerp(0f, 1f, t));
+            }
         });
         pinAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 final float t = show ? 1f : 0f;
-                numbersFrameLayout.setScaleX(AndroidUtilities.lerp(.8f, 1f, t));
-                numbersFrameLayout.setScaleY(AndroidUtilities.lerp(.8f, 1f, t));
-                numbersFrameLayout.setAlpha(AndroidUtilities.lerp(0f, 1f, t));
+                activeInputPanel.setScaleX(AndroidUtilities.lerp(.85f, 1f, t));
+                activeInputPanel.setScaleY(AndroidUtilities.lerp(.85f, 1f, t));
+                activeInputPanel.setAlpha(AndroidUtilities.lerp(0f, 1f, t));
 
                 passcodeTextView.setScaleX(AndroidUtilities.lerp(1f, .9f, t));
                 passcodeTextView.setScaleY(AndroidUtilities.lerp(1f, .9f, t));
                 passcodeTextView.setAlpha(AndroidUtilities.lerp(1f, 0f, t));
 
-                passwordEditText2.setAlpha(AndroidUtilities.lerp(0f, 1f, t));
+                if (isPinMode()) {
+                    passwordEditText2.setAlpha(AndroidUtilities.lerp(0f, 1f, t));
+                }
             }
         });
         pinAnimator.setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT);
@@ -1384,39 +1509,38 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
             return;
         }
         Activity parentActivity = AndroidUtilities.findActivity(getContext());
-        if (parentActivity != null && fingerprintView.getVisibility() == VISIBLE && !ApplicationLoader.mainInterfacePaused && (!(parentActivity instanceof LaunchActivity) || ((LaunchActivity) parentActivity).allowShowFingerprintDialog(this))) {
-            try {
-                if (BiometricManager.from(getContext()).canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) == BiometricManager.BIOMETRIC_SUCCESS && FingerprintController.isKeyReady() && !FingerprintController.checkDeviceFingerprintsChanged()) {
-                    final Executor executor = ContextCompat.getMainExecutor(getContext());
-                    BiometricPrompt prompt = new BiometricPrompt(LaunchActivity.instance, executor, new BiometricPrompt.AuthenticationCallback() {
+        if (parentActivity != null && hasFingerprint() && !ApplicationLoader.mainInterfacePaused
+                && (!(parentActivity instanceof LaunchActivity) || ((LaunchActivity) parentActivity).allowShowFingerprintDialog(this))) {
+            if (activeBiometricHandle != null) {
+                activeBiometricHandle.cancel();
+                activeBiometricHandle = null;
+            }
+            activeBiometricHandle = ShieldBiometricHelper.authenticate(
+                    parentActivity,
+                    LocaleController.getString(R.string.ShieldBiometricPromptTitle),
+                    LocaleController.getString(SharedConfig.useFaceLock ? R.string.ShieldBiometricPromptSubtitleFace : R.string.UnlockToUse),
+                    LocaleController.getString(R.string.ShieldUsePasscode),
+                    new ShieldBiometricHelper.AuthCallback() {
                         @Override
-                        public void onAuthenticationError(int errMsgId, @NonNull CharSequence errString) {
-                            FileLog.d("PasscodeView onAuthenticationError " + errMsgId + " \"" + errString + "\"");
-                            showPin(true);
-                        }
-
-                        @Override
-                        public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
-                            FileLog.d("PasscodeView onAuthenticationSucceeded");
+                        public void onSucceeded() {
+                            activeBiometricHandle = null;
                             processDone(true);
                         }
 
                         @Override
-                        public void onAuthenticationFailed() {
-                            FileLog.d("PasscodeView onAuthenticationFailed");
+                        public void onFallbackToPasscode(CharSequence reason) {
+                            activeBiometricHandle = null;
                             showPin(true);
                         }
-                    });
-                    final BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
-                            .setTitle(LocaleController.getString(R.string.UnlockToUse))
-                            .setNegativeButtonText(LocaleController.getString(R.string.UsePIN))
-                            .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
-                            .build();
-                    prompt.authenticate(promptInfo);
-                    showPin(false);
-                }
-            } catch (Exception e) {
-                FileLog.e(e);
+
+                        @Override
+                        public void onTransientFailure() {
+                            // Keep system Face / Fingerprint prompt scanning without collapsing overlay
+                        }
+                    }
+            );
+            if (activeBiometricHandle != null && SharedConfig.passcodeType != SharedConfig.PASSCODE_TYPE_PASSWORD) {
+                showPin(false);
             }
         }
     }
@@ -1427,26 +1551,34 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
 
     protected boolean hasFingerprint() {
         Activity parentActivity = AndroidUtilities.findActivity(getContext());
-        if (Build.VERSION.SDK_INT >= 23 && parentActivity != null && SharedConfig.useFingerprintLock) {
-            try {
-                FingerprintManagerCompat fingerprintManager = FingerprintManagerCompat.from(ApplicationLoader.applicationContext);
-                return fingerprintManager.isHardwareDetected() && fingerprintManager.hasEnrolledFingerprints() && FingerprintController.isKeyReady() && !FingerprintController.checkDeviceFingerprintsChanged();
-            } catch (Throwable e) {
-                FileLog.e(e);
-            }
+        if (Build.VERSION.SDK_INT >= 23 && parentActivity != null && (SharedConfig.useFaceLock || SharedConfig.useFingerprintLock)) {
+            return ShieldBiometricHelper.canAuthenticate(parentActivity);
         }
         return false;
     }
 
     private void checkFingerprintButton() {
-        boolean hasFingerprint = hasFingerprint();
-        fingerprintView.setVisibility(hasFingerprint ? VISIBLE : GONE);
+        boolean hasBio = hasFingerprint();
+        boolean preferFaceIcon = SharedConfig.useFaceLock && ShieldBiometricHelper.hasFaceFeature(getContext());
+        int bioIconRes = preferFaceIcon ? R.drawable.ic_sg_face_id : R.drawable.fingerprint;
+
+        fingerprintView.setImage(bioIconRes);
+        fingerprintView.setVisibility(hasBio ? VISIBLE : GONE);
+        fingerprintImage.setImageResource(bioIconRes);
         if (SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PASSWORD) {
-            fingerprintImage.setVisibility(fingerprintView.getVisibility());
+            fingerprintImage.setVisibility(hasBio ? VISIBLE : GONE);
         }
-        subtitleView.setText(subtitle != null ? subtitle : LocaleController.getString(
-                SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PASSWORD ? R.string.EnterPassword :
-                hasFingerprint ? R.string.EnterPINorFingerprint : R.string.EnterPIN));
+        if (patternBiometricButton != null) {
+            patternBiometricButton.setImage(bioIconRes);
+            patternBiometricButton.setVisibility(hasBio ? VISIBLE : GONE);
+        }
+        if (SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PIN6) {
+            subtitleView.setText(subtitle != null ? subtitle : LocaleController.getString(R.string.ShieldEnter6DigitPIN));
+        } else {
+            subtitleView.setText(subtitle != null ? subtitle : LocaleController.getString(
+                    SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PASSWORD ? R.string.EnterPassword :
+                    hasBio ? R.string.EnterPINorFingerprint : R.string.EnterPIN));
+        }
     }
 
     public void onShow(boolean fingerprint, boolean animated, int x, int y, Runnable onShow, Runnable onStart) {
@@ -1492,7 +1624,7 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
         } else {
             String selectedBackgroundSlug = Theme.getSelectedBackgroundSlug();
             if (Theme.DEFAULT_BACKGROUND_SLUG.equals(selectedBackgroundSlug) || Theme.isPatternWallpaper()) {
-                backgroundFrameLayout.setBackgroundColor(backgroundFrameLayoutColor = 0xff517c9e);
+                backgroundFrameLayout.setBackgroundColor(backgroundFrameLayoutColor = 0xff0d1528);
             } else {
                 backgroundDrawable = Theme.getCachedWallpaper();
                 if (backgroundDrawable instanceof BackgroundGradientDrawable) {
@@ -1500,7 +1632,7 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
                 } else if (backgroundDrawable != null) {
                     backgroundFrameLayout.setBackgroundColor(backgroundFrameLayoutColor = 0xbf000000);
                 } else {
-                    backgroundFrameLayout.setBackgroundColor(backgroundFrameLayoutColor = 0xff517c9e);
+                    backgroundFrameLayout.setBackgroundColor(backgroundFrameLayoutColor = 0xff0d1528);
                 }
             }
         }
@@ -1525,18 +1657,38 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
 
         passcodeTextView.setText(isAppLock() ? LocaleController.getString(R.string.AppLocked) : title);
 
-        if (SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PIN) {
+        if (isPinMode()) {
             if (retryTextView.getVisibility() != VISIBLE) {
                 numbersFrameLayout.setVisibility(VISIBLE);
             }
+            if (patternContainer != null) {
+                patternContainer.setVisibility(GONE);
+            }
             passwordEditText.setVisibility(GONE);
             passwordEditText2.setVisibility(VISIBLE);
+            checkImage.setVisibility(GONE);
+            fingerprintImage.setVisibility(GONE);
+        } else if (isPatternMode()) {
+            numbersFrameLayout.setVisibility(GONE);
+            if (patternContainer != null) {
+                patternContainer.setVisibility(retryTextView.getVisibility() != VISIBLE ? VISIBLE : GONE);
+                patternContainer.setAlpha(1f);
+            }
+            if (patternView != null) {
+                patternView.clearPattern();
+                patternView.setInputEnabled(true);
+            }
+            passwordEditText.setVisibility(GONE);
+            passwordEditText2.setVisibility(GONE);
             checkImage.setVisibility(GONE);
             fingerprintImage.setVisibility(GONE);
         } else if (SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PASSWORD) {
             passwordEditText.setFilters(new InputFilter[0]);
             passwordEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
             numbersFrameLayout.setVisibility(GONE);
+            if (patternContainer != null) {
+                patternContainer.setVisibility(GONE);
+            }
             passwordEditText.setFocusable(true);
             passwordEditText.setFocusableInTouchMode(true);
             passwordEditText.setVisibility(VISIBLE);
@@ -1548,6 +1700,7 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
         passwordEditText.setTransformationMethod(PasswordTransformationMethod.getInstance());
         passwordEditText.setText("");
         passwordEditText2.eraseAllCharacters(false);
+        lastPatternCode = "";
         if (animated) {
             setAlpha(0.0f);
             getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -1679,7 +1832,7 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
 
                     float ix;
                     if (!AndroidUtilities.isTablet() && getContext().getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                        ix = (SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PIN ? w / 2f : w) / 2 - dp(30);
+                        ix = ((isPinMode() || isPatternMode()) ? w / 2f : w) / 2 - dp(30);
                     } else {
                         ix = w / 2f - dp(29);
                     }
@@ -1732,13 +1885,15 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
             border.setVisibility(SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PASSWORD ? VISIBLE : GONE);
         }
 
+        final boolean isGridPanel = isPinMode() || isPatternMode();
+
         if (landscape) {
-            imageView.setTranslationX((SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PIN ? width / 2f : width) / 2 - dp(29));
+            imageView.setTranslationX((isGridPanel ? width / 2f : width) / 2 - dp(29));
 
             layoutParams = (LayoutParams) passwordFrameLayout.getLayoutParams();
-            layoutParams.width = SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PIN ? width / 2 : width;
+            layoutParams.width = isGridPanel ? width / 2 : width;
             layoutParams.height = dp(180);
-            layoutParams.topMargin = (height - dp(140)) / 2 + (SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PIN ? dp(40) : 0);
+            layoutParams.topMargin = (height - dp(140)) / 2 + (isPinMode() ? dp(40) : 0);
             passwordFrameLayout.setLayoutParams(layoutParams);
 
             layoutParams = (LayoutParams) numbersContainer.getLayoutParams();
@@ -1755,6 +1910,11 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
             layoutParams.width =  buttonSize * cols + sizeBetweenNumbersX * Math.max(0, cols - 1);
             layoutParams.gravity = Gravity.CENTER;
             numbersFrameLayout.setLayoutParams(layoutParams);
+            if (patternContainer != null) {
+                LayoutParams plp = (LayoutParams) patternContainer.getLayoutParams();
+                plp.gravity = Gravity.CENTER;
+                patternContainer.setLayoutParams(plp);
+            }
         } else {
             imageView.setTranslationX(width / 2f - dp(29));
 
@@ -1771,7 +1931,7 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
                 }
             }
             layoutParams = (LayoutParams) passwordFrameLayout.getLayoutParams();
-            layoutParams.height = height / 3 + (SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PIN ? dp(40) : 0);
+            layoutParams.height = height / 3 + (isPinMode() ? dp(40) : (isPatternMode() ? -dp(24) : 0));
             layoutParams.width = width;
             layoutParams.topMargin = top;
             layoutParams.leftMargin = left;
@@ -1790,6 +1950,11 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
                 layoutParams.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
             }
             numbersFrameLayout.setLayoutParams(layoutParams);
+            if (patternContainer != null) {
+                LayoutParams plp = (LayoutParams) patternContainer.getLayoutParams();
+                plp.gravity = AndroidUtilities.isTablet() ? Gravity.CENTER : (Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+                patternContainer.setLayoutParams(plp);
+            }
 
             int buttonHeight = height - layoutParams.height;
             layoutParams = (LayoutParams) numbersContainer.getLayoutParams();

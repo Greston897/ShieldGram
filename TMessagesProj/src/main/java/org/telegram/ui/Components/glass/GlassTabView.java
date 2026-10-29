@@ -35,6 +35,7 @@ import org.telegram.messenger.MediaDataController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
+import org.telegram.shieldgram.ShieldGramConfig;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.AnimatedTextView;
@@ -74,6 +75,8 @@ public class GlassTabView extends FrameLayout implements MainTabsLayout.Tab, Fac
 
     private TabAnimation tabAnimation;
     private TLRPC.TL_attachMenuBot tabAnimationBot;
+    private boolean isMainDockTab;
+    private final Paint paintCyberStroke = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     private final TextPaint defaultTextPaint;
 
@@ -154,13 +157,21 @@ public class GlassTabView extends FrameLayout implements MainTabsLayout.Tab, Fac
         if (selectedFactor > 0 && !skipDrawSelector) {
             final float alpha = AnimatorUtils.DECELERATE_INTERPOLATOR.getInterpolation(selectedFactor);
 
-            paintCounterBackground.setColor(Theme.multAlpha(colorSelected, 0.09f * alpha));
+            final boolean cyber = isMainDockTab && ShieldGramConfig.cyberGlowAccents;
+            paintCounterBackground.setColor(Theme.multAlpha(colorSelected, (cyber ? 0.16f : 0.09f) * alpha));
             tmpRectF.set(0, 0, viewWidth, getHeight());
             final float r = Math.min(tmpRectF.width(), tmpRectF.height()) / 2f;
             final float s = lerp(0.6f, 1, selectedFactor) * MathUtils.clamp(attachScale, 0, 1);
             canvas.save();
             canvas.scale(s, s, tmpRectF.centerX(), tmpRectF.centerY());
             canvas.drawRoundRect(tmpRectF, r, r, paintCounterBackground);
+            if (cyber) {
+                paintCyberStroke.setStyle(Paint.Style.STROKE);
+                paintCyberStroke.setStrokeWidth(dpf2(0.85f));
+                paintCyberStroke.setColor(Theme.multAlpha(colorSelected, 0.34f * alpha));
+                tmpRectF.inset(dpf2(0.5f), dpf2(0.5f));
+                canvas.drawRoundRect(tmpRectF, r, r, paintCyberStroke);
+            }
             canvas.restore();
         }
 
@@ -264,10 +275,55 @@ public class GlassTabView extends FrameLayout implements MainTabsLayout.Tab, Fac
         textView.setTextColor(colorText);
     }
 
+    private void applyMainDockStyle() {
+        if (!isMainDockTab) {
+            return;
+        }
+        ShieldGramConfig.ensureLoaded();
+        final boolean compact = ShieldGramConfig.isDockCompact();
+        textView.setVisibility(compact ? GONE : VISIBLE);
+        if (backupImageView != null && imageView.getVisibility() == GONE) {
+            backupImageView.setRoundRadius(ShieldGramConfig.getAvatarRoundRadius(dp(22)));
+            backupImageView.setLayoutParams(LayoutHelper.createFrame(
+                    22, 22,
+                    compact ? Gravity.CENTER : (Gravity.CENTER_HORIZONTAL | Gravity.TOP),
+                    0, compact ? 0 : 5, 0, 0
+            ));
+        } else {
+            imageView.setLayoutParams(LayoutHelper.createFrame(
+                    24, 24,
+                    compact ? Gravity.CENTER : (Gravity.CENTER_HORIZONTAL | Gravity.TOP),
+                    0, compact ? 0 : 4, 0, 0
+            ));
+        }
+    }
+
+    private int resolveShieldVectorIcon() {
+        if (!isMainDockTab || tabAnimation == null || !ShieldGramConfig.useShieldCustomIcons) {
+            return 0;
+        }
+        switch (tabAnimation) {
+            case CHATS:
+                return R.drawable.ic_sg_tab_chats;
+            case CONTACTS:
+                return R.drawable.ic_sg_tab_contacts;
+            case CALLS:
+                return R.drawable.ic_sg_tab_calls;
+            case SETTINGS:
+                return R.drawable.ic_sg_tab_settings;
+            default:
+                return 0;
+        }
+    }
+
     public void updateColorsLottie() {
         colorDefault = Theme.getColor(Theme.key_glass_tabUnselected, resourcesProvider);
         colorSelected = Theme.getColor(Theme.key_glass_tabSelected, resourcesProvider);
         colorSelectedText = Theme.getColor(Theme.key_glass_tabSelectedText, resourcesProvider);
+        if (isMainDockTab) {
+            applyMainDockStyle();
+            checkPlayAnimation(false);
+        }
         updateColors();
         invalidate();
     }
@@ -309,6 +365,24 @@ public class GlassTabView extends FrameLayout implements MainTabsLayout.Tab, Fac
         if (tabAnimation == null) {
             return;
         }
+
+        int shieldVec = resolveShieldVectorIcon();
+        if (shieldVec != 0) {
+            imageView.clearAnimationDrawable();
+            lastIconAnimationRaw = 0;
+            imageView.setImageResource(shieldVec);
+            float targetScale = isSelected ? 1.07f : 0.96f;
+            if (animated) {
+                imageView.animate().scaleX(targetScale).scaleY(targetScale).setDuration(200).setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT).start();
+            } else {
+                imageView.setScaleX(targetScale);
+                imageView.setScaleY(targetScale);
+            }
+            updateColors();
+            return;
+        }
+        imageView.setScaleX(1f);
+        imageView.setScaleY(1f);
 
         if (tabAnimation.iconStatic != -1) {
             imageView.setImageResource(tabAnimation.iconStatic);
@@ -400,10 +474,11 @@ public class GlassTabView extends FrameLayout implements MainTabsLayout.Tab, Fac
     public static GlassTabView createMainTab(Context context, Theme.ResourcesProvider resourcesProvider, TabAnimation tabAnimation, @StringRes int stringRes) {
         GlassTabView tab = new GlassTabView(context);
         tab.resourcesProvider = resourcesProvider;
+        tab.isMainDockTab = true;
         tab.tabAnimation = tabAnimation;
         tab.textView.setText(LocaleController.getString(stringRes));
+        tab.applyMainDockStyle();
         tab.checkPlayAnimation(false);
-        tab.imageView.setLayoutParams(LayoutHelper.createFrame(24, 24, Gravity.CENTER_HORIZONTAL | Gravity.TOP, 0, 4, 0, 0));
         tab.colorDefault = Theme.getColor(Theme.key_glass_tabUnselected, resourcesProvider);
         tab.colorSelected = Theme.getColor(Theme.key_glass_tabSelected, resourcesProvider);
         tab.colorSelectedText = Theme.getColor(Theme.key_glass_tabSelectedText, resourcesProvider);
@@ -413,6 +488,8 @@ public class GlassTabView extends FrameLayout implements MainTabsLayout.Tab, Fac
 
     public static GlassTabView createAvatar(Context context, Theme.ResourcesProvider resourcesProvider, int currentAccount, @StringRes int stringRes) {
         GlassTabView tab = new GlassTabView(context);
+        tab.resourcesProvider = resourcesProvider;
+        tab.isMainDockTab = true;
         tab.textView.setText(LocaleController.getString(stringRes));
         tab.imageView.setVisibility(GONE);
 
@@ -421,10 +498,11 @@ public class GlassTabView extends FrameLayout implements MainTabsLayout.Tab, Fac
 
         BackupImageView backupImageView = new BackupImageView(context);
         backupImageView.setForUserOrChat(user, avatarDrawable);
-        backupImageView.setRoundRadius(dp(11));
+        backupImageView.setRoundRadius(ShieldGramConfig.getAvatarRoundRadius(dp(22)));
         tab.backupImageView = backupImageView;
 
         tab.addView(backupImageView, LayoutHelper.createFrame(22, 22, Gravity.CENTER_HORIZONTAL | Gravity.TOP, 0, 5, 0, 0));
+        tab.applyMainDockStyle();
         tab.colorDefault = Theme.getColor(Theme.key_glass_tabUnselected, resourcesProvider);
         tab.colorSelected = Theme.getColor(Theme.key_glass_tabSelected, resourcesProvider);
         tab.colorSelectedText = Theme.getColor(Theme.key_glass_tabSelectedText, resourcesProvider);

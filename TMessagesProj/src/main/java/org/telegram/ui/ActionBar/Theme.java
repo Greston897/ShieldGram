@@ -4016,6 +4016,37 @@ public class Theme {
         themes.add(themeInfo);
         themesDict.put("Night", themeInfo);
 
+        // ShieldGram Built-In Signature Themes
+        themeInfo = new ThemeInfo();
+        themeInfo.name = "Cyber Sapphire";
+        themeInfo.assetName = "cyber_sapphire.attheme";
+        themeInfo.previewBackgroundColor = 0xff0e121c;
+        themeInfo.previewInColor = 0xff161f33;
+        themeInfo.previewOutColor = 0xff233d78;
+        themeInfo.sortIndex = 0;
+        themes.add(themeInfo);
+        themesDict.put("Cyber Sapphire", currentDayTheme = currentNightTheme = defaultTheme = themeInfo);
+
+        themeInfo = new ThemeInfo();
+        themeInfo.name = "Shield Obsidian";
+        themeInfo.assetName = "shield_obsidian.attheme";
+        themeInfo.previewBackgroundColor = 0xff05070c;
+        themeInfo.previewInColor = 0xff0e1424;
+        themeInfo.previewOutColor = 0xff1c356c;
+        themeInfo.sortIndex = 0;
+        themes.add(themeInfo);
+        themesDict.put("Shield Obsidian", themeInfo);
+
+        themeInfo = new ThemeInfo();
+        themeInfo.name = "Royal Indigo";
+        themeInfo.assetName = "royal_indigo.attheme";
+        themeInfo.previewBackgroundColor = 0xff0f0e1e;
+        themeInfo.previewInColor = 0xff1c1b36;
+        themeInfo.previewOutColor = 0xff322e7a;
+        themeInfo.sortIndex = 0;
+        themes.add(themeInfo);
+        themesDict.put("Royal Indigo", themeInfo);
+
         String themesString = themeConfig.getString("themes2", null);
 
         int remoteVersion = themeConfig.getInt("remote_version", 0);
@@ -4255,7 +4286,7 @@ public class Theme {
                 oldEditorNew.commit();
             }
 
-            selectedAutoNightType = preferences.getInt("selectedAutoNightType", Build.VERSION.SDK_INT >= 29 ? AUTO_NIGHT_TYPE_SYSTEM : AUTO_NIGHT_TYPE_NONE);
+            selectedAutoNightType = preferences.getInt("selectedAutoNightType", AUTO_NIGHT_TYPE_NONE);
             autoNightScheduleByLocation = preferences.getBoolean("autoNightScheduleByLocation", false);
             autoNightBrighnessThreshold = preferences.getFloat("autoNightBrighnessThreshold", 0.25f);
             autoNightDayStartTime = preferences.getInt("autoNightDayStartTime", 22 * 60);

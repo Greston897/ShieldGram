@@ -86,6 +86,7 @@ import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
 import org.telegram.messenger.Utilities;
 import org.telegram.messenger.utils.DrawableUtils;
+import org.telegram.shieldgram.ShieldGramConfig;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
@@ -3709,7 +3710,7 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
             } else if (chat != null && chat.forum && currentDialogFolderId == 0 && !useFromUserAsAvatar || !isSavedDialog && user != null && user.self && MessagesController.getInstance(currentAccount).savedViewAsChats) {
                 avatarRadius = dp(16);
             } else {
-                avatarRadius = dp(28);
+                avatarRadius = ShieldGramConfig.getAvatarRoundRadius(dp(56));
             }
 
             avatarImage.setRoundRadius(avatarRadius);
@@ -3795,6 +3796,9 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
 
     private GradientDrawable archiveFadeGradientDrawable;
     private int archiveFadeGradientDrawableColor;
+    private final Paint shieldCardPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint shieldCardBorderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final RectF shieldCardRect = new RectF();
 
     @SuppressLint("DrawAllocation")
     @Override
@@ -4033,6 +4037,30 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
 
         canvas.save();
         canvas.translate(0, -rightFragmentOffset * rightFragmentOpenedProgress);
+        if (ShieldGramConfig.modernChatCards && !isTopic) {
+            final int baseBg = Theme.getColor(Theme.key_windowBackgroundWhite, resourcesProvider);
+            final boolean dark = AndroidUtilities.computePerceivedBrightness(baseBg) < 0.5f;
+            final boolean hasUnreadAccent = (unreadCount > 0 || markUnread) && !isCounterMuted();
+            final boolean pinned = getIsPinned() || drawPinBackground;
+            int cardColor;
+            if (dark) {
+                cardColor = ColorUtils.blendARGB(baseBg, 0xFF213358, pinned ? 0.26f : (hasUnreadAccent ? 0.19f : 0.11f));
+            } else {
+                cardColor = ColorUtils.blendARGB(baseBg, 0xFFEAF1FF, pinned ? 0.50f : (hasUnreadAccent ? 0.35f : 0.22f));
+            }
+            shieldCardPaint.setColor(cardColor);
+            shieldCardPaint.setAlpha((int) (255 * (1f - rightFragmentOpenedProgress)));
+            shieldCardRect.set(dpf2(6f), dpf2(2.5f), getMeasuredWidth() - dpf2(6f), getMeasuredHeight() - dpf2(2.5f) - translateY);
+            canvas.drawRoundRect(shieldCardRect, dpf2(14f), dpf2(14f), shieldCardPaint);
+
+            shieldCardBorderPaint.setStyle(Paint.Style.STROKE);
+            shieldCardBorderPaint.setStrokeWidth(dpf2(0.8f));
+            int borderClr = (hasUnreadAccent || (pinned && ShieldGramConfig.cyberGlowAccents))
+                    ? ColorUtils.setAlphaComponent(Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider), dark ? 68 : 54)
+                    : (dark ? 0x1694A3B8 : 0x180F172A);
+            shieldCardBorderPaint.setColor(borderClr);
+            canvas.drawRoundRect(shieldCardRect, dpf2(14f), dpf2(14f), shieldCardBorderPaint);
+        }
         if (currentDialogFolderId != 0 && (!SharedConfig.archiveHidden || archiveBackgroundProgress != 0)) {
             Theme.dialogs_pinnedPaint.setColor(AndroidUtilities.getOffsetColor(0, Theme.getColor(Theme.key_chats_pinnedOverlay, resourcesProvider), archiveBackgroundProgress, 1.0f));
             Theme.dialogs_pinnedPaint.setAlpha((int) (Theme.dialogs_pinnedPaint.getAlpha() * (1f - rightFragmentOpenedProgress)));
@@ -4758,6 +4786,13 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                     avatarImage.getCenterX(), avatarImage.getCenterY(), dp(48));
                 avatarImage.draw(canvas);
             } else {
+                if (!(chat != null && chat.forum && currentDialogFolderId == 0 && !useFromUserAsAvatar)
+                        && !(!isSavedDialog && user != null && user.self && MessagesController.getInstance(currentAccount).savedViewAsChats)) {
+                    int w = (int) storyParams.originalAvatarRect.width();
+                    if (w > 0) {
+                        avatarImage.setRoundRadius(ShieldGramConfig.getAvatarRoundRadius(w));
+                    }
+                }
                 storyParams.drawHiddenStoriesAsSegments = isShareToStoryCell || currentDialogFolderId != 0;
                 int s = storyParams.forceState;
                 if (isShareToStoryCell) {
@@ -4820,7 +4855,7 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
             canvas.restore();
         }
 
-        if (useSeparator) {
+        if (useSeparator && !ShieldGramConfig.modernChatCards) {
             int left;
             if (fullSeparator || currentDialogFolderId != 0 && archiveHidden && !fullSeparator2 || fullSeparator2 && !archiveHidden) {
                 left = 0;

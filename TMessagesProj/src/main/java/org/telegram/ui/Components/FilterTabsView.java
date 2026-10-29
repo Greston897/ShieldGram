@@ -63,6 +63,7 @@ import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
+import org.telegram.shieldgram.ShieldGramConfig;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.Theme;
@@ -932,7 +933,7 @@ public class FilterTabsView extends FrameLayout {
 
             @Override
             protected void dispatchDraw(@NonNull Canvas canvas) {
-                // drawSelector(canvas);
+                drawSelector(canvas);
                 super.dispatchDraw(canvas);
             }
 
@@ -1505,14 +1506,40 @@ public class FilterTabsView extends FrameLayout {
             canvas.scale(listView.getScaleX(), 1f, listView.getPivotX() + listView.getX(), listView.getPivotY());
 
             final float add = additionalTabWidth / 2f;
+            final int lineColor = Theme.getColor(tabLineColorKey, resourcesProvider);
+            final float alphaFactor = listView.getAlpha();
 
-            final int y = height / 2 - dp(14);
-            selectorDrawable.setBounds((int) (indicatorX - dp(TAB_INTERNAL_PADDING) - add), y, (int) (indicatorX + indicatorWidth + dp(TAB_INTERNAL_PADDING) + add), y + dp(28));
-            selectorDrawable.setAlpha(31);
-            selectorDrawable.draw(canvas);
+            if (ShieldGramConfig.folderTabStyle == ShieldGramConfig.FOLDER_TAB_UNDERLINE) {
+                final int left = (int) (indicatorX - dp(4) - add);
+                final int right = (int) (indicatorX + indicatorWidth + dp(4) + add);
+                final int barHeight = dp(3);
+                final int top = height - dp(10) - barHeight;
+                selectorDrawable.setColor(lineColor);
+                selectorDrawable.setBounds(left, top, right, top + barHeight);
+                selectorDrawable.setAlpha((int) (235 * alphaFactor));
+                selectorDrawable.draw(canvas);
+            } else {
+                final int y = height / 2 - dp(14);
+                final int left = (int) (indicatorX - dp(TAB_INTERNAL_PADDING) - add);
+                final int right = (int) (indicatorX + indicatorWidth + dp(TAB_INTERNAL_PADDING) + add);
+                selectorDrawable.setColor(lineColor);
+                selectorDrawable.setBounds(left, y, right, y + dp(28));
+                selectorDrawable.setAlpha((int) ((ShieldGramConfig.cyberGlowAccents ? 52 : 34) * alphaFactor));
+                selectorDrawable.draw(canvas);
+
+                if (ShieldGramConfig.cyberGlowAccents) {
+                    cyberPillStrokePaint.setStyle(Paint.Style.STROKE);
+                    cyberPillStrokePaint.setStrokeWidth(dpf2(0.9f));
+                    cyberPillStrokePaint.setColor(ColorUtils.setAlphaComponent(lineColor, (int) (112 * alphaFactor)));
+                    AndroidUtilities.rectTmp.set(left + dpf2(0.5f), y + dpf2(0.5f), right - dpf2(0.5f), y + dp(28) - dpf2(0.5f));
+                    canvas.drawRoundRect(AndroidUtilities.rectTmp, dpf2(14f), dpf2(14f), cyberPillStrokePaint);
+                }
+            }
             canvas.restore();
         }
     }
+
+    private final Paint cyberPillStrokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     private final Path clipPath = new Path();
 
