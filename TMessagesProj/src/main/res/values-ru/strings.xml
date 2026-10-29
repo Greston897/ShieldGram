@@ -409,5 +409,21 @@
     <string name="ShieldHudStatusFaceReady">Спец-HUD готов (Face ID откалиброван)</string>
     <string name="ShieldHudStatusFpReady">Спец-HUD готов (Отпечаток пальца)</string>
     <string name="ShieldHudStatusNeedsCalibration">Откалибруйте Face ID или добавьте отпечаток</string>
+    <string name="ShieldLiquidGlassToggle">Эффект жидкого стекла</string>
+    <string name="ShieldLiquidGlassHint">Оптическое преломление жидкого стекла в панелях навигации, поле ввода и меню.</string>
+    <string name="ShieldCleanAppearance">Оформление</string>
+    <string name="ShieldCleanAppIcon">Иконка приложения</string>
+    <string name="ShieldCleanAppIconHint">Выберите 3D-иконку приложения для главного экрана.</string>
+    <string name="ShieldCleanNavigation">Навигация</string>
+    <string name="ShieldCleanSecurity">Безопасность и вход</string>
+    <string name="ShieldCleanPasscodeSub">PIN, графический ключ, пароль и биометрия Android</string>
+    <string name="ShieldCleanDuressSub">Скрытый режим при вводе запасного кода</string>
+    <string name="ShieldShortSapphire">Сапфир</string>
+    <string name="ShieldShortGold">Золото</string>
+    <string name="ShieldShortObsidian">Обсидиан</string>
+    <string name="ShieldShortDaylight">Светлая</string>
+    <string name="ShieldDockShortFull">Обычная</string>
+    <string name="ShieldDockShortCompact">Компактная</string>
+    <string name="ShieldDockShortHidden">Скрыта</string>
     <!-- ShieldGram Phase 2 Strings End -->
 </resources>

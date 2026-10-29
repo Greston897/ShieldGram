@@ -1739,7 +1739,7 @@ public class SharedConfig {
     }
 
     public static boolean canBlurChat() {
-        return getDevicePerformanceClass() >= (Build.VERSION.SDK_INT >= 31 ? PERFORMANCE_CLASS_AVERAGE : PERFORMANCE_CLASS_HIGH) || BuildVars.DEBUG_PRIVATE_VERSION;
+        return Build.VERSION.SDK_INT >= 31 || getDevicePerformanceClass() >= PERFORMANCE_CLASS_HIGH || BuildVars.DEBUG_PRIVATE_VERSION;
     }
 
     public static boolean chatBlurEnabled() {

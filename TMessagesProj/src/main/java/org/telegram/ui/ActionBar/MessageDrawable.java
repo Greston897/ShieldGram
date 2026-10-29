@@ -325,8 +325,6 @@ public class MessageDrawable extends Drawable {
         return shadowDrawable;
     }
 
-    private final Paint shieldBubbleRimPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
     private int getEffectiveBubbleRadiusDp() {
         return org.telegram.shieldgram.ShieldGramConfig.bubbleCornerRadius > 0
                 ? org.telegram.shieldgram.ShieldGramConfig.bubbleCornerRadius
@@ -567,9 +565,7 @@ public class MessageDrawable extends Drawable {
 
     public void draw(Canvas canvas, Paint paintToUse) {
         Rect bounds = getBounds();
-        final boolean drawShieldOutRim = paintToUse == null && currentType == TYPE_TEXT && isOut
-                && org.telegram.shieldgram.ShieldGramConfig.cyberGlowAccents;
-        if (!drawShieldOutRim && paintToUse == null && paint.getStyle() == Paint.Style.FILL && gradientShader == null && overrideRoundRadius == 0 && overrideRounding <= 0) {
+        if (paintToUse == null && paint.getStyle() == Paint.Style.FILL && gradientShader == null && overrideRoundRadius == 0 && overrideRounding <= 0) {
             Drawable background = getBackgroundDrawable();
             if (background != null) {
                 background.setBounds(bounds);
@@ -633,23 +629,6 @@ public class MessageDrawable extends Drawable {
             int color = getColor(Theme.key_chat_outBubbleGradientSelectedOverlay);
             selectedPaint.setColor(ColorUtils.setAlphaComponent(color, (int) (Color.alpha(color) * alpha / 255f)));
             canvas.drawPath(path, selectedPaint);
-        }
-        if ((drawShieldOutRim || (isSelected && paintToUse == null && currentType == TYPE_TEXT)) && path != null && bounds.width() > dp(12)) {
-            int rimClr = org.telegram.shieldgram.ShieldGramConfig.isRoyalGoldActive()
-                    ? 0xFFF5D061
-                    : org.telegram.shieldgram.ShieldGramConfig.getSignatureAccentColor(true);
-            int topAlpha = (int) ((isSelected ? 190 : 88) * (alpha / 255f));
-            int botAlpha = (int) ((isSelected ? 110 : 28) * (alpha / 255f));
-            shieldBubbleRimPaint.setStyle(Paint.Style.STROKE);
-            shieldBubbleRimPaint.setStrokeWidth(AndroidUtilities.dpf2(isSelected ? 1.25f : 0.85f));
-            shieldBubbleRimPaint.setShader(new LinearGradient(
-                    bounds.left, bounds.top, bounds.right, bounds.bottom,
-                    ColorUtils.setAlphaComponent(rimClr, topAlpha),
-                    ColorUtils.setAlphaComponent(rimClr, botAlpha),
-                    Shader.TileMode.CLAMP
-            ));
-            canvas.drawPath(path, shieldBubbleRimPaint);
-            shieldBubbleRimPaint.setShader(null);
         }
     }
 

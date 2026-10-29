@@ -63,7 +63,6 @@ import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
-import org.telegram.shieldgram.ShieldGramConfig;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.Theme;
@@ -933,6 +932,7 @@ public class FilterTabsView extends FrameLayout {
 
             @Override
             protected void dispatchDraw(@NonNull Canvas canvas) {
+                // drawSelector(canvas);
                 super.dispatchDraw(canvas);
             }
 
@@ -1388,10 +1388,10 @@ public class FilterTabsView extends FrameLayout {
 
     @Override
     protected boolean drawChild(@NonNull Canvas canvas, View child, long drawingTime) {
+        boolean result = super.drawChild(canvas, child, drawingTime);
         if (child == listView) {
             drawSelector(canvas);
         }
-        boolean result = super.drawChild(canvas, child, drawingTime);
         long newTime = SystemClock.elapsedRealtime();
         long dt = Math.min(17, newTime - lastEditingAnimationTime);
         lastEditingAnimationTime = newTime;
@@ -1505,63 +1505,14 @@ public class FilterTabsView extends FrameLayout {
             canvas.scale(listView.getScaleX(), 1f, listView.getPivotX() + listView.getX(), listView.getPivotY());
 
             final float add = additionalTabWidth / 2f;
-            final int activeClr = ShieldGramConfig.isRoyalGoldActive()
-                    ? 0xFFF2C955
-                    : ColorUtils.setAlphaComponent(Theme.getColor(activeTextColorKey, resourcesProvider), 255);
-            final int secondaryClr = ShieldGramConfig.isRoyalGoldActive()
-                    ? 0xFFC89628
-                    : ShieldGramConfig.getSignatureSecondaryColor(true);
-            final float alphaFactor = Utilities.clamp(listView.getAlpha(), 1f, 0f);
 
-            if (ShieldGramConfig.folderTabStyle == ShieldGramConfig.FOLDER_TAB_UNDERLINE) {
-                final float left = Math.max(dpf2(12f), indicatorX - dpf2(4f) - add);
-                final float right = Math.min(getMeasuredWidth() - dpf2(12f), indicatorX + indicatorWidth + dpf2(4f) + add);
-                final float barHeight = dpf2(2.6f);
-                final float top = height - dpf2(10.5f) - barHeight;
-                if (right > left) {
-                    cyberPillFillPaint.setShader(new android.graphics.LinearGradient(
-                            left, top, right, top,
-                            ColorUtils.setAlphaComponent(activeClr, (int) (245 * alphaFactor)),
-                            ColorUtils.setAlphaComponent(secondaryClr, (int) (235 * alphaFactor)),
-                            android.graphics.Shader.TileMode.CLAMP
-                    ));
-                    AndroidUtilities.rectTmp.set(left, top, right, top + barHeight);
-                    canvas.drawRoundRect(AndroidUtilities.rectTmp, barHeight / 2f, barHeight / 2f, cyberPillFillPaint);
-                    cyberPillFillPaint.setShader(null);
-                }
-            } else {
-                final float pillH = Math.min(dpf2(25f), Math.max(dpf2(21f), height - dpf2(21.5f)));
-                final float top = (height - pillH) / 2f;
-                final float padX = dpf2(10.5f);
-                final float left = Math.max(dpf2(10.5f), indicatorX - padX - add);
-                final float right = Math.min(getMeasuredWidth() - dpf2(10.5f), indicatorX + indicatorWidth + padX + add);
-                final float rad = pillH / 2f;
-                if (right > left) {
-                    cyberPillFillPaint.setShader(new android.graphics.LinearGradient(
-                            left, top, left, top + pillH,
-                            ColorUtils.setAlphaComponent(activeClr, (int) ((ShieldGramConfig.cyberGlowAccents ? 54 : 36) * alphaFactor)),
-                            ColorUtils.setAlphaComponent(secondaryClr, (int) ((ShieldGramConfig.cyberGlowAccents ? 28 : 20) * alphaFactor)),
-                            android.graphics.Shader.TileMode.CLAMP
-                    ));
-                    AndroidUtilities.rectTmp.set(left, top, right, top + pillH);
-                    canvas.drawRoundRect(AndroidUtilities.rectTmp, rad, rad, cyberPillFillPaint);
-                    cyberPillFillPaint.setShader(null);
-
-                    if (ShieldGramConfig.cyberGlowAccents) {
-                        cyberPillStrokePaint.setStyle(Paint.Style.STROKE);
-                        cyberPillStrokePaint.setStrokeWidth(dpf2(1.0f));
-                        cyberPillStrokePaint.setColor(ColorUtils.setAlphaComponent(activeClr, (int) (135 * alphaFactor)));
-                        AndroidUtilities.rectTmp.set(left + dpf2(0.5f), top + dpf2(0.5f), right - dpf2(0.5f), top + pillH - dpf2(0.5f));
-                        canvas.drawRoundRect(AndroidUtilities.rectTmp, rad - dpf2(0.5f), rad - dpf2(0.5f), cyberPillStrokePaint);
-                    }
-                }
-            }
+            final int y = height / 2 - dp(14);
+            selectorDrawable.setBounds((int) (indicatorX - dp(TAB_INTERNAL_PADDING) - add), y, (int) (indicatorX + indicatorWidth + dp(TAB_INTERNAL_PADDING) + add), y + dp(28));
+            selectorDrawable.setAlpha(31);
+            selectorDrawable.draw(canvas);
             canvas.restore();
         }
     }
-
-    private final Paint cyberPillFillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint cyberPillStrokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     private final Path clipPath = new Path();
 

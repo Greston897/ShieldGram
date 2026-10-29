@@ -2664,9 +2664,9 @@ public class RecyclerListView extends RecyclerView implements IBlur3Capture {
         if (clipDialogCard) {
             Rect b = selectorDrawable.getBounds();
             if (!b.isEmpty()) {
-                float ix = org.telegram.shieldgram.ShieldGramConfig.modernChatCards ? AndroidUtilities.dpf2(8.5f) : AndroidUtilities.dpf2(6f);
-                float iy = org.telegram.shieldgram.ShieldGramConfig.modernChatCards ? AndroidUtilities.dpf2(2.5f) : AndroidUtilities.dpf2(1.5f);
-                float rad = org.telegram.shieldgram.ShieldGramConfig.modernChatCards ? AndroidUtilities.dpf2(16f) : AndroidUtilities.dpf2(12f);
+                float ix = AndroidUtilities.dpf2(6f);
+                float iy = AndroidUtilities.dpf2(1.5f);
+                float rad = AndroidUtilities.dpf2(14f);
                 shieldSelectorClipPath.rewind();
                 shieldSelectorClipPath.addRoundRect(b.left + ix, b.top + iy, b.right - ix, b.bottom - iy, rad, rad, Path.Direction.CW);
                 canvas.save();

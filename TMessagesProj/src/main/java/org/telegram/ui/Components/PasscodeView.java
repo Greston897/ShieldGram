@@ -1031,7 +1031,7 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
         ScaleStateListAnimator.apply(patternBiometricButton, .15f, 1.5f);
         patternBiometricButton.setBackground(createGlass(patternBiometricButton));
         patternBiometricButton.setForeground(Theme.createSimpleSelectorRoundRectDrawable(dp(30), 0, 0x26ffffff));
-        patternBiometricButton.setImage(R.drawable.ic_sg_face_id);
+        patternBiometricButton.setImage(R.drawable.fingerprint);
         patternBiometricButton.setOnClickListener(v -> checkFingerprint());
         patternContainer.addView(patternBiometricButton, LayoutHelper.createLinear(BUTTON_SIZE, BUTTON_SIZE, Gravity.CENTER_HORIZONTAL, 0, 8, 0, 0));
 
@@ -1517,10 +1517,9 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
             }
             activeBiometricHandle = ShieldBiometricHelper.authenticate(
                     parentActivity,
-                    PasscodeView.this,
-                    LocaleController.getString(R.string.ShieldBiometricPromptTitle),
-                    LocaleController.getString(SharedConfig.useFaceLock ? R.string.ShieldBiometricPromptSubtitleFace : R.string.UnlockToUse),
-                    LocaleController.getString(R.string.ShieldUsePasscode),
+                    LocaleController.getString(R.string.UnlockToUse),
+                    null,
+                    LocaleController.getString(R.string.UsePIN),
                     new ShieldBiometricHelper.AuthCallback() {
                         @Override
                         public void onSucceeded() {
@@ -1536,7 +1535,6 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
 
                         @Override
                         public void onTransientFailure() {
-                            // Keep system Face / Fingerprint prompt scanning without collapsing overlay
                         }
                     }
             );
@@ -1560,17 +1558,14 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
 
     private void checkFingerprintButton() {
         boolean hasBio = hasFingerprint();
-        boolean preferFaceIcon = SharedConfig.useFaceLock && ShieldBiometricHelper.hasFaceFeature(getContext());
-        int bioIconRes = preferFaceIcon ? R.drawable.ic_sg_face_id : R.drawable.fingerprint;
-
-        fingerprintView.setImage(bioIconRes);
+        fingerprintView.setImage(R.drawable.fingerprint);
         fingerprintView.setVisibility(hasBio ? VISIBLE : GONE);
-        fingerprintImage.setImageResource(bioIconRes);
+        fingerprintImage.setImageResource(R.drawable.fingerprint);
         if (SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PASSWORD) {
             fingerprintImage.setVisibility(hasBio ? VISIBLE : GONE);
         }
         if (patternBiometricButton != null) {
-            patternBiometricButton.setImage(bioIconRes);
+            patternBiometricButton.setImage(R.drawable.fingerprint);
             patternBiometricButton.setVisibility(hasBio ? VISIBLE : GONE);
         }
         if (SharedConfig.passcodeType == SharedConfig.PASSCODE_TYPE_PIN6) {

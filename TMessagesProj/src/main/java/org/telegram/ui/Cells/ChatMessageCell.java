@@ -1934,7 +1934,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         backgroundDrawable = new MessageBackgroundDrawable(this);
         avatarImage = new ImageReceiver();
         avatarImage.setAllowLoadingOnAttachedOnly(true);
-        avatarImage.setRoundRadius(org.telegram.shieldgram.ShieldGramConfig.getAvatarRoundRadius(dp(21)));
+        avatarImage.setRoundRadius(dp(21));
         avatarDrawable = new AvatarDrawable();
         replyImageReceiver = new ImageReceiver(this);
         replyImageReceiver.setAllowLoadingOnAttachedOnly(true);

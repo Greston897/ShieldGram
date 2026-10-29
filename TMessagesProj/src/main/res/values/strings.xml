@@ -11776,5 +11776,21 @@
     <string name="ShieldHudStatusFaceReady">Special HUD Active (Face ID Calibrated)</string>
     <string name="ShieldHudStatusFpReady">Special HUD Active (Hardware Fingerprint)</string>
     <string name="ShieldHudStatusNeedsCalibration">Tap Calibrate Face ID or enroll a fingerprint</string>
+    <string name="ShieldLiquidGlassToggle">Liquid Glass Effects</string>
+    <string name="ShieldLiquidGlassHint">Real-time optical refraction across navigation bars, chat input, and menus.</string>
+    <string name="ShieldCleanAppearance">Appearance</string>
+    <string name="ShieldCleanAppIcon">App Icon</string>
+    <string name="ShieldCleanAppIconHint">Select a 3D launcher icon for your home screen.</string>
+    <string name="ShieldCleanNavigation">Navigation</string>
+    <string name="ShieldCleanSecurity">Security &amp; Privacy</string>
+    <string name="ShieldCleanPasscodeSub">PIN, Pattern, Password &amp; Android Biometrics</string>
+    <string name="ShieldCleanDuressSub">Silent decoy mode on panic unlock</string>
+    <string name="ShieldShortSapphire">Sapphire</string>
+    <string name="ShieldShortGold">Royal Gold</string>
+    <string name="ShieldShortObsidian">Obsidian</string>
+    <string name="ShieldShortDaylight">Daylight</string>
+    <string name="ShieldDockShortFull">Standard</string>
+    <string name="ShieldDockShortCompact">Compact</string>
+    <string name="ShieldDockShortHidden">Hidden</string>
     <!-- ShieldGram Phase 2 Strings End -->
 </resources>

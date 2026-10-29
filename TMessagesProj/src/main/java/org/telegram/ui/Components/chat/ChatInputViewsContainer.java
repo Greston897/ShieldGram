@@ -248,9 +248,6 @@ public class ChatInputViewsContainer extends FrameLayout {
     private final Rect tmpRect = new Rect();
     private final RectF tmpRectF = new RectF();
 
-    private final android.graphics.Paint shieldIslandBorderPaint = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
-    private final RectF shieldIslandRectF = new RectF();
-
     @Override
     protected void dispatchDraw(@NonNull Canvas canvas) {
         underKeyboardBackgroundDrawable.setBounds(
@@ -272,28 +269,8 @@ public class ChatInputViewsContainer extends FrameLayout {
         tmpRect.offset(0, blurTop + (int) bubbleInputTranlationY);
 
         blurredBackgroundDrawable.setBounds(tmpRect);
-        if (drawInputBackground) {
+        if (drawInputBackground)
             blurredBackgroundDrawable.draw(canvas);
-            if (org.telegram.shieldgram.ShieldGramConfig.chatGlassInputBar && inputBubbleHeightRound > dp(20)) {
-                int pad = dp(7);
-                shieldIslandRectF.set(tmpRect.left + pad, tmpRect.top + pad, tmpRect.right - pad, tmpRect.bottom - pad);
-                if (shieldIslandRectF.width() > dp(24) && shieldIslandRectF.height() > dp(20)) {
-                    int c1 = org.telegram.shieldgram.ShieldGramConfig.getSignatureAccentColor(true);
-                    int c2 = org.telegram.shieldgram.ShieldGramConfig.getSignatureSecondaryColor(true);
-                    float rad = Math.min(dp(INPUT_BUBBLE_RADIUS), shieldIslandRectF.height() / 2f);
-                    shieldIslandBorderPaint.setStyle(android.graphics.Paint.Style.STROKE);
-                    shieldIslandBorderPaint.setStrokeWidth(org.telegram.messenger.AndroidUtilities.dpf2(1.0f));
-                    shieldIslandBorderPaint.setShader(new android.graphics.LinearGradient(
-                            shieldIslandRectF.left, shieldIslandRectF.top, shieldIslandRectF.right, shieldIslandRectF.bottom,
-                            androidx.core.graphics.ColorUtils.setAlphaComponent(c1, 118),
-                            androidx.core.graphics.ColorUtils.setAlphaComponent(c2, 46),
-                            android.graphics.Shader.TileMode.CLAMP
-                    ));
-                    canvas.drawRoundRect(shieldIslandRectF, rad, rad, shieldIslandBorderPaint);
-                    shieldIslandBorderPaint.setShader(null);
-                }
-            }
-        }
 
         if (needDrawInAppKeyboard) {
             underKeyboardBackgroundDrawable.draw(canvas);

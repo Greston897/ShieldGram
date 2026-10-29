@@ -86,7 +86,6 @@ import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
 import org.telegram.messenger.Utilities;
 import org.telegram.messenger.utils.DrawableUtils;
-import org.telegram.shieldgram.ShieldGramConfig;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
@@ -1242,12 +1241,6 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
         if (isTransitionSupport) {
             return;
         }
-        if ((avatarStart == 11 || avatarStart == 15) && (messagePaddingStart == 72 || messagePaddingStart == 75)) {
-            boolean cardPad = ShieldGramConfig.modernChatCards && !isTopic && !isShareToStoryCell;
-            avatarStart = cardPad ? 15 : 11;
-            messagePaddingStart = cardPad ? 75 : 72;
-        }
-
         if (isDialogCell) {
             boolean needUpdate = updateHelper.update();
             if (!needUpdate && currentDialogFolderId == 0 && currentDialogCommunityId == 0 && encryptedChat == null) {
@@ -3716,7 +3709,7 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
             } else if (chat != null && chat.forum && currentDialogFolderId == 0 && !useFromUserAsAvatar || !isSavedDialog && user != null && user.self && MessagesController.getInstance(currentAccount).savedViewAsChats) {
                 avatarRadius = dp(16);
             } else {
-                avatarRadius = ShieldGramConfig.getAvatarRoundRadius(dp(56));
+                avatarRadius = dp(28);
             }
 
             avatarImage.setRoundRadius(avatarRadius);
@@ -3802,9 +3795,6 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
 
     private GradientDrawable archiveFadeGradientDrawable;
     private int archiveFadeGradientDrawableColor;
-    private final Paint shieldCardPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint shieldCardBorderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final RectF shieldCardRect = new RectF();
 
     @SuppressLint("DrawAllocation")
     @Override
@@ -4035,95 +4025,20 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
         }
 
         float cornersRadius = dp(8) * cornerProgress;
-        final float checkSelectProgress = Math.max(isSelected ? 1f : 0f, checkBox != null ? checkBox.getProgress() : 0f);
-        if (isSelected && (!ShieldGramConfig.modernChatCards || isTopic)) {
-            rect.set(0, 0, getMeasuredWidth(), AndroidUtilities.lerp(getMeasuredHeight(), getCollapsedHeight(), rightFragmentOpenedProgress));
+        if (isSelected) {
+            rect.set(dpf2(6f), dpf2(1.5f), getMeasuredWidth() - dpf2(6f), AndroidUtilities.lerp(getMeasuredHeight(), getCollapsedHeight(), rightFragmentOpenedProgress) - dpf2(1.5f));
             rect.offset(0, -translateY + collapseOffset);
-            canvas.drawRoundRect(rect, cornersRadius, cornersRadius, Theme.dialogs_tabletSeletedPaint);
+            canvas.drawRoundRect(rect, dpf2(14f), dpf2(14f), Theme.dialogs_tabletSeletedPaint);
+        } else if (!isTopic && checkBox != null && checkBox.getProgress() > 0.01f) {
+            float cp = checkBox.getProgress() * (1f - rightFragmentOpenedProgress);
+            rect.set(dpf2(6f), dpf2(1.5f), getMeasuredWidth() - dpf2(6f), getMeasuredHeight() - translateY - dpf2(1.5f));
+            int selColor = Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider);
+            Theme.dialogs_pinnedPaint.setColor(Theme.multAlpha(selColor, 0.11f * cp));
+            canvas.drawRoundRect(rect, dpf2(14f), dpf2(14f), Theme.dialogs_pinnedPaint);
         }
 
         canvas.save();
         canvas.translate(0, -rightFragmentOffset * rightFragmentOpenedProgress);
-        if (!isTopic && (ShieldGramConfig.modernChatCards || checkSelectProgress > 0.01f)) {
-            final int baseBg = Theme.getColor(Theme.key_windowBackgroundWhite, resourcesProvider);
-            final boolean dark = AndroidUtilities.computePerceivedBrightness(baseBg) < 0.5f;
-            final boolean gold = ShieldGramConfig.isRoyalGoldActive();
-            final int sigAccent = ShieldGramConfig.getSignatureAccentColor(dark);
-            final int sigSecondary = ShieldGramConfig.getSignatureSecondaryColor(dark);
-            final boolean hasUnreadAccent = (unreadCount > 0 || markUnread) && !isCounterMuted();
-            final boolean pinned = getIsPinned() || drawPinBackground;
-
-            final float cardInsetX = dpf2(8.5f);
-            final float cardInsetY = dpf2(2.5f);
-            final float cardRad = dpf2(16f);
-            shieldCardRect.set(cardInsetX, cardInsetY, getMeasuredWidth() - cardInsetX, getMeasuredHeight() - cardInsetY - translateY);
-
-            int baseCardColor;
-            int baseTint = gold ? (dark ? 0xFF33260E : 0xFFFFF5DC) : (dark ? 0xFF192847 : 0xFFEAF1FF);
-            if (!ShieldGramConfig.modernChatCards) {
-                baseCardColor = ColorUtils.setAlphaComponent(baseBg, 0);
-            } else if (dark) {
-                float mix = pinned ? 0.24f : (hasUnreadAccent ? 0.17f : 0.085f);
-                baseCardColor = ColorUtils.blendARGB(baseBg, baseTint, mix);
-            } else {
-                float mix = pinned ? 0.44f : (hasUnreadAccent ? 0.30f : 0.16f);
-                baseCardColor = ColorUtils.blendARGB(baseBg, baseTint, mix);
-            }
-
-            final float openFade = 1f - rightFragmentOpenedProgress;
-            if (ShieldGramConfig.modernChatCards) {
-                shieldCardPaint.setShader(null);
-                shieldCardPaint.setColor(baseCardColor);
-                shieldCardPaint.setAlpha((int) (255 * openFade));
-                canvas.drawRoundRect(shieldCardRect, cardRad, cardRad, shieldCardPaint);
-            }
-
-            if (checkSelectProgress > 0.01f) {
-                int selStart = ColorUtils.setAlphaComponent(sigAccent, (int) ((dark ? 66 : 48) * checkSelectProgress * openFade));
-                int selEnd = ColorUtils.setAlphaComponent(sigSecondary, (int) ((dark ? 26 : 18) * checkSelectProgress * openFade));
-                shieldCardPaint.setShader(new android.graphics.LinearGradient(
-                        shieldCardRect.left, shieldCardRect.top, shieldCardRect.right, shieldCardRect.bottom,
-                        selStart, selEnd, android.graphics.Shader.TileMode.CLAMP
-                ));
-                shieldCardPaint.setAlpha(255);
-                canvas.drawRoundRect(shieldCardRect, cardRad, cardRad, shieldCardPaint);
-                shieldCardPaint.setShader(null);
-            }
-
-            shieldCardBorderPaint.setStyle(Paint.Style.STROKE);
-            if (checkSelectProgress > 0.01f) {
-                shieldCardBorderPaint.setStrokeWidth(AndroidUtilities.lerp(dpf2(0.8f), dpf2(1.35f), checkSelectProgress));
-                int idleBorder = dark ? 0x1694A3B8 : 0x140F172A;
-                int activeBorder = ColorUtils.setAlphaComponent(sigAccent, dark ? 195 : 165);
-                shieldCardBorderPaint.setColor(ColorUtils.blendARGB(idleBorder, activeBorder, checkSelectProgress));
-                canvas.drawRoundRect(shieldCardRect, cardRad, cardRad, shieldCardBorderPaint);
-
-                // Signature vertical indicator bar along the left inner edge when selected
-                float barH = dpf2(26f) * checkSelectProgress;
-                float cy = shieldCardRect.centerY();
-                AndroidUtilities.rectTmp.set(
-                        shieldCardRect.left + dpf2(2.8f),
-                        cy - barH / 2f,
-                        shieldCardRect.left + dpf2(5.8f),
-                        cy + barH / 2f
-                );
-                shieldCardPaint.setShader(null);
-                shieldCardPaint.setColor(ColorUtils.setAlphaComponent(sigAccent, (int) (235 * checkSelectProgress * openFade)));
-                canvas.drawRoundRect(AndroidUtilities.rectTmp, dpf2(2f), dpf2(2f), shieldCardPaint);
-            } else if (ShieldGramConfig.modernChatCards) {
-                shieldCardBorderPaint.setStrokeWidth(dpf2(0.8f));
-                int borderClr;
-                if (hasUnreadAccent && ShieldGramConfig.cyberGlowAccents) {
-                    borderClr = ColorUtils.setAlphaComponent(sigAccent, dark ? 76 : 58);
-                } else if (pinned && ShieldGramConfig.cyberGlowAccents) {
-                    borderClr = ColorUtils.setAlphaComponent(sigAccent, dark ? 52 : 42);
-                } else {
-                    borderClr = dark ? 0x1494A3B8 : 0x120F172A;
-                }
-                shieldCardBorderPaint.setColor(borderClr);
-                canvas.drawRoundRect(shieldCardRect, cardRad, cardRad, shieldCardBorderPaint);
-            }
-        }
         if (currentDialogFolderId != 0 && (!SharedConfig.archiveHidden || archiveBackgroundProgress != 0)) {
             Theme.dialogs_pinnedPaint.setColor(AndroidUtilities.getOffsetColor(0, Theme.getColor(Theme.key_chats_pinnedOverlay, resourcesProvider), archiveBackgroundProgress, 1.0f));
             Theme.dialogs_pinnedPaint.setAlpha((int) (Theme.dialogs_pinnedPaint.getAlpha() * (1f - rightFragmentOpenedProgress)));
@@ -4849,13 +4764,6 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                     avatarImage.getCenterX(), avatarImage.getCenterY(), dp(48));
                 avatarImage.draw(canvas);
             } else {
-                if (!(chat != null && chat.forum && currentDialogFolderId == 0 && !useFromUserAsAvatar)
-                        && !(!isSavedDialog && user != null && user.self && MessagesController.getInstance(currentAccount).savedViewAsChats)) {
-                    int w = (int) storyParams.originalAvatarRect.width();
-                    if (w > 0) {
-                        avatarImage.setRoundRadius(ShieldGramConfig.getAvatarRoundRadius(w));
-                    }
-                }
                 storyParams.drawHiddenStoriesAsSegments = isShareToStoryCell || currentDialogFolderId != 0;
                 int s = storyParams.forceState;
                 if (isShareToStoryCell) {
@@ -4918,7 +4826,7 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
             canvas.restore();
         }
 
-        if (useSeparator && !ShieldGramConfig.modernChatCards) {
+        if (useSeparator) {
             int left;
             if (fullSeparator || currentDialogFolderId != 0 && archiveHidden && !fullSeparator2 || fullSeparator2 && !archiveHidden) {
                 left = 0;

@@ -62,13 +62,15 @@ public class LiteMode {
         FLAG_ANIMATED_EMOJI_KEYBOARD_PREMIUM |
         FLAG_ANIMATED_EMOJI_REACTIONS_PREMIUM |
         FLAG_ANIMATED_EMOJI_CHAT |
+        FLAG_CHAT_BLUR |
+        FLAG_LIQUID_GLASS |
         FLAG_CHAT_FORUM_TWOCOLUMN |
         FLAG_CALLS_ANIMATIONS |
         FLAG_AUTOPLAY_VIDEOS |
         FLAG_AUTOPLAY_GIFS |
         FLAG_CHAT_THANOS |
         FLAG_PARTICLES
-    ); // 204383
+    );
     public static int PRESET_HIGH = (
         FLAGS_ANIMATED_STICKERS |
         FLAGS_ANIMATED_EMOJI |
@@ -76,13 +78,14 @@ public class LiteMode {
         FLAG_CHAT_FORUM_TWOCOLUMN |
         FLAG_CHAT_SPOILER |
         FLAG_CHAT_BLUR |
+        FLAG_LIQUID_GLASS |
         FLAG_CHAT_SCALE |
         FLAG_CHAT_THANOS |
         FLAG_CALLS_ANIMATIONS |
         FLAG_AUTOPLAY_VIDEOS |
         FLAG_AUTOPLAY_GIFS |
         FLAG_PARTICLES
-    ); // 262143
+    );
     public static int PRESET_POWER_SAVER = 0;
 
     private static int BATTERY_LOW = 10;
@@ -213,7 +216,9 @@ public class LiteMode {
         if (!preferences.contains("lite_mode6")) {
             if (preferences.contains("lite_mode5")) {
                 defaultValue = preferences.getInt("lite_mode5", defaultValue);
-                defaultValue &=~ FLAG_LIQUID_GLASS;
+                if (Build.VERSION.SDK_INT >= 33) {
+                    defaultValue |= FLAG_LIQUID_GLASS | FLAG_CHAT_BLUR;
+                }
                 preferences.edit().putInt("lite_mode6", defaultValue).apply();
             } else if (preferences.contains("lite_mode4")) {
                 defaultValue = preferences.getInt("lite_mode4", defaultValue);
@@ -278,6 +283,13 @@ public class LiteMode {
 
         int prevValue = value;
         value = preferences.getInt("lite_mode6", defaultValue);
+        if (Build.VERSION.SDK_INT >= 33 && !preferences.getBoolean("sg_liquid_glass_default_v3", false)) {
+            value |= FLAG_LIQUID_GLASS | FLAG_CHAT_BLUR;
+            preferences.edit()
+                    .putInt("lite_mode6", value)
+                    .putBoolean("sg_liquid_glass_default_v3", true)
+                    .apply();
+        }
         if (loaded) {
             onFlagsUpdate(prevValue, value);
         }

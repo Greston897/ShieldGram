@@ -569,9 +569,6 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         contentView.setBackgroundColor(getThemedColor(Theme.key_windowBackgroundGray));
         titleView.setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteBlackText));
         subtitleView.setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteGrayText));
-        if (avatarView != null) {
-            avatarView.setRoundRadius(ShieldGramConfig.getAvatarRoundRadius(dp(90)));
-        }
         searchItem.updateColor();
 
         final int navigationBarColor = getThemedColor(Theme.key_windowBackgroundWhite);
@@ -721,7 +718,15 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             items.add(UItem.asShadow(null));
         }
 
-        items.add(SettingCell.Factory.of(1001, 0xFF5B8CFF, 0xFF2563EB, R.drawable.ic_sg_shield, getString(R.string.ShieldGramCenterTitle), getString(R.string.ShieldGramCenterSubtitle)));
+        final boolean sgGold = ShieldGramConfig.isRoyalGoldActive();
+        items.add(SettingCell.Factory.of(
+                1001,
+                sgGold ? 0xFFF2C955 : 0xFF5B8CFF,
+                sgGold ? 0xFFC48B1E : 0xFF2563EB,
+                R.drawable.ic_sg_shield,
+                getString(R.string.ShieldGramCenterTitle),
+                getString(R.string.ShieldGramCenterSubtitle)
+        ));
         items.add(UItem.asShadow(null));
 
         items.add(SettingCell.Factory.of(1, IconBackgroundColors.BLUE.top, IconBackgroundColors.BLUE.bottom, R.drawable.settings_account, getString(R.string.SettingsAccount), getString(R.string.SettingsAccountInfo)));

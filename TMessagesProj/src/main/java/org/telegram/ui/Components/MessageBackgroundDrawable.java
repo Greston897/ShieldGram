@@ -127,83 +127,35 @@ public class MessageBackgroundDrawable extends Drawable {
         paint.setAlpha(alpha);
     }
 
-    private final android.graphics.RectF shieldSelectRect = new android.graphics.RectF();
-    private final android.graphics.Path shieldSelectClipPath = new android.graphics.Path();
-    private final Paint shieldSelectBorderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint shieldSelectBarPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
     @Override
     public void draw(Canvas canvas) {
-        Rect bounds = getBounds();
-        if (currentAnimationProgress > 0.0f && !bounds.isEmpty()) {
-            float ix = org.telegram.messenger.AndroidUtilities.dpf2(5.5f);
-            float iy = org.telegram.messenger.AndroidUtilities.dpf2(1.5f);
-            float rad = org.telegram.messenger.AndroidUtilities.dpf2(14f);
-            shieldSelectRect.set(bounds.left + ix, bounds.top + iy, bounds.right - ix, bounds.bottom - iy);
-            if (shieldSelectRect.width() > 0 && shieldSelectRect.height() > 0) {
-                float p;
-                if (currentAnimationProgress == 1.0f) {
-                    p = 1.0f;
-                } else if (isSelected) {
-                    p = CubicBezierInterpolator.EASE_OUT_QUINT.getInterpolation(currentAnimationProgress);
-                } else {
-                    p = 1.0f - CubicBezierInterpolator.EASE_OUT_QUINT.getInterpolation(1.0f - currentAnimationProgress);
-                }
-
-                int sigAccent = org.telegram.shieldgram.ShieldGramConfig.getSignatureAccentColor(true);
-                int sigSecondary = org.telegram.shieldgram.ShieldGramConfig.getSignatureSecondaryColor(true);
-
-                canvas.save();
-                shieldSelectClipPath.rewind();
-                shieldSelectClipPath.addRoundRect(shieldSelectRect, rad, rad, android.graphics.Path.Direction.CW);
-                canvas.clipPath(shieldSelectClipPath);
-
-                Paint basePaint = customPaint != null ? customPaint : paint;
-                if (currentAnimationProgress == 1.0f) {
-                    canvas.drawRect(shieldSelectRect, basePaint);
-                } else {
-                    float centerX = bounds.centerX();
-                    float centerY = bounds.centerY();
-                    float x1 = (touchOverrideX >= 0 && touchOverrideY >= 0) ? touchOverrideX : (touchX >= 0 && touchY >= 0 ? touchX : centerX);
-                    float y1 = (touchOverrideX >= 0 && touchOverrideY >= 0) ? touchOverrideY : (touchX >= 0 && touchY >= 0 ? touchY : centerY);
-                    x1 = centerX + (1.0f - p) * (x1 - centerX);
-                    y1 = centerY + (1.0f - p) * (y1 - centerY);
-                    canvas.drawCircle(x1, y1, finalRadius * p, basePaint);
-                }
-
-                shieldSelectBarPaint.setShader(new android.graphics.LinearGradient(
-                        shieldSelectRect.left, shieldSelectRect.top, shieldSelectRect.right, shieldSelectRect.bottom,
-                        androidx.core.graphics.ColorUtils.setAlphaComponent(sigAccent, (int) (46 * p)),
-                        androidx.core.graphics.ColorUtils.setAlphaComponent(sigSecondary, (int) (14 * p)),
-                        android.graphics.Shader.TileMode.CLAMP
-                ));
-                canvas.drawRect(shieldSelectRect, shieldSelectBarPaint);
-                shieldSelectBarPaint.setShader(null);
-                canvas.restore();
-
-                shieldSelectBorderPaint.setStyle(Paint.Style.STROKE);
-                shieldSelectBorderPaint.setStrokeWidth(org.telegram.messenger.AndroidUtilities.dpf2(1.1f));
-                shieldSelectBorderPaint.setColor(androidx.core.graphics.ColorUtils.setAlphaComponent(sigAccent, (int) (150 * p)));
-                canvas.drawRoundRect(shieldSelectRect, rad, rad, shieldSelectBorderPaint);
-
-                float barH = Math.min(shieldSelectRect.height() * 0.55f, org.telegram.messenger.AndroidUtilities.dpf2(24f)) * p;
-                if (barH > org.telegram.messenger.AndroidUtilities.dpf2(4f)) {
-                    float cy = shieldSelectRect.centerY();
-                    org.telegram.messenger.AndroidUtilities.rectTmp.set(
-                            shieldSelectRect.left + org.telegram.messenger.AndroidUtilities.dpf2(2.5f),
-                            cy - barH / 2f,
-                            shieldSelectRect.left + org.telegram.messenger.AndroidUtilities.dpf2(5.2f),
-                            cy + barH / 2f
-                    );
-                    shieldSelectBarPaint.setColor(androidx.core.graphics.ColorUtils.setAlphaComponent(sigAccent, (int) (225 * p)));
-                    canvas.drawRoundRect(
-                            org.telegram.messenger.AndroidUtilities.rectTmp,
-                            org.telegram.messenger.AndroidUtilities.dpf2(2f),
-                            org.telegram.messenger.AndroidUtilities.dpf2(2f),
-                            shieldSelectBarPaint
-                    );
-                }
+        if (currentAnimationProgress == 1.0f) {
+            canvas.drawRect(getBounds(), customPaint != null ? customPaint : paint);
+        } else if (currentAnimationProgress != 0.0f) {
+            float interpolatedProgress;
+            if (isSelected) {
+                interpolatedProgress = CubicBezierInterpolator.EASE_OUT_QUINT.getInterpolation(currentAnimationProgress);
+            } else {
+                interpolatedProgress = 1.0f - CubicBezierInterpolator.EASE_OUT_QUINT.getInterpolation(1.0f - currentAnimationProgress);
             }
+            Rect bounds = getBounds();
+            float centerX = bounds.centerX();
+            float centerY = bounds.centerY();
+            float x1;
+            float y1;
+            if (touchOverrideX >= 0 && touchOverrideY >= 0) {
+                x1 = touchOverrideX;
+                y1 = touchOverrideY;
+            } else if (touchX >= 0 && touchY >= 0) {
+                x1 = touchX;
+                y1 = touchY;
+            } else {
+                x1 = centerX;
+                y1 = centerY;
+            }
+            x1 = centerX + (1.0f - interpolatedProgress) * (x1 - centerX);
+            y1 = centerY + (1.0f - interpolatedProgress) * (y1 - centerY);
+            canvas.drawCircle(x1, y1, finalRadius * interpolatedProgress, customPaint != null ? customPaint : paint);
         }
         if (animationInProgress) {
             long newTime = SystemClock.elapsedRealtime();
