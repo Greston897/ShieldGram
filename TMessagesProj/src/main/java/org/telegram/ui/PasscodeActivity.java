@@ -379,6 +379,14 @@ public class PasscodeActivity extends BaseFragment implements NotificationCenter
                         SharedConfig.useFaceLock = !SharedConfig.useFaceLock;
                         SharedConfig.saveConfig();
                         ((TextCheckCell) view).setChecked(SharedConfig.useFaceLock);
+                        if (SharedConfig.useFaceLock && org.telegram.shieldgram.ShieldGramConfig.customBiometricHud
+                                && !org.telegram.shieldgram.ShieldGramConfig.hasEnrolledFaceSignature()) {
+                            org.telegram.shieldgram.ShieldBiometricHelper.launchFaceCalibrationOverlay(getParentActivity(), () -> {
+                                if (listAdapter != null) {
+                                    listAdapter.notifyDataSetChanged();
+                                }
+                            });
+                        }
                     } else if (position == fingerprintRow) {
                         SharedConfig.useFingerprintLock = !SharedConfig.useFingerprintLock;
                         SharedConfig.saveConfig();

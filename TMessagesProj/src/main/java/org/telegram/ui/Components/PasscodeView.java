@@ -1517,6 +1517,7 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
             }
             activeBiometricHandle = ShieldBiometricHelper.authenticate(
                     parentActivity,
+                    PasscodeView.this,
                     LocaleController.getString(R.string.ShieldBiometricPromptTitle),
                     LocaleController.getString(SharedConfig.useFaceLock ? R.string.ShieldBiometricPromptSubtitleFace : R.string.UnlockToUse),
                     LocaleController.getString(R.string.ShieldUsePasscode),
@@ -1623,8 +1624,9 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
             }
         } else {
             String selectedBackgroundSlug = Theme.getSelectedBackgroundSlug();
+            int fallbackLockBg = ShieldGramConfig.isRoyalGoldActive() ? 0xff110d06 : 0xff0a1224;
             if (Theme.DEFAULT_BACKGROUND_SLUG.equals(selectedBackgroundSlug) || Theme.isPatternWallpaper()) {
-                backgroundFrameLayout.setBackgroundColor(backgroundFrameLayoutColor = 0xff0d1528);
+                backgroundFrameLayout.setBackgroundColor(backgroundFrameLayoutColor = fallbackLockBg);
             } else {
                 backgroundDrawable = Theme.getCachedWallpaper();
                 if (backgroundDrawable instanceof BackgroundGradientDrawable) {
@@ -1632,7 +1634,7 @@ public class PasscodeView extends FrameLayout implements NotificationCenter.Noti
                 } else if (backgroundDrawable != null) {
                     backgroundFrameLayout.setBackgroundColor(backgroundFrameLayoutColor = 0xbf000000);
                 } else {
-                    backgroundFrameLayout.setBackgroundColor(backgroundFrameLayoutColor = 0xff0d1528);
+                    backgroundFrameLayout.setBackgroundColor(backgroundFrameLayoutColor = fallbackLockBg);
                 }
             }
         }

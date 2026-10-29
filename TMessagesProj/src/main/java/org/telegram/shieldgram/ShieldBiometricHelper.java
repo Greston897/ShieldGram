@@ -3,9 +3,13 @@ package org.telegram.shieldgram;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.CancellationSignal;
 import android.text.TextUtils;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -38,13 +42,26 @@ public final class ShieldBiometricHelper {
     public static final class CancellationHandle {
         private CancellationSignal platformSignal;
         private BiometricPrompt androidxPrompt;
+        private ShieldBiometricHudOverlay customHudOverlay;
         private boolean cancelled;
+
+        public boolean isCustomHud() {
+            return customHudOverlay != null;
+        }
 
         public void cancel() {
             if (cancelled) {
                 return;
             }
             cancelled = true;
+            if (customHudOverlay != null) {
+                try {
+                    customHudOverlay.dismissImmediate();
+                } catch (Throwable e) {
+                    FileLog.e(e);
+                }
+                customHudOverlay = null;
+            }
             if (platformSignal != null) {
                 try {
                     platformSignal.cancel();
@@ -73,12 +90,63 @@ public final class ShieldBiometricHelper {
         return manufacturer.contains("samsung") || brand.contains("samsung");
     }
 
+    public static boolean hasFrontCamera(@Nullable Context context) {
+        if (context == null) {
+            context = ApplicationLoader.applicationContext;
+        }
+        if (context == null) {
+            return false;
+        }
+        try {
+            if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT)) {
+                return true;
+            }
+            if (Build.VERSION.SDK_INT >= 21) {
+                CameraManager cm = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
+                if (cm != null) {
+                    for (String id : cm.getCameraIdList()) {
+                        Integer facing = cm.getCameraCharacteristics(id).get(CameraCharacteristics.LENS_FACING);
+                        if (facing != null && facing == CameraCharacteristics.LENS_FACING_FRONT) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            FileLog.e(e);
+        }
+        return false;
+    }
+
+    public static boolean hasHardwareFingerprintReady(@Nullable Context context) {
+        if (Build.VERSION.SDK_INT < 23) {
+            return false;
+        }
+        if (context == null) {
+            context = ApplicationLoader.applicationContext;
+        }
+        if (context == null) {
+            return false;
+        }
+        try {
+            FingerprintManagerCompat fm = FingerprintManagerCompat.from(context);
+            return fm.isHardwareDetected() && fm.hasEnrolledFingerprints();
+        } catch (Throwable e) {
+            FileLog.e(e);
+            return false;
+        }
+    }
+
     public static boolean hasFaceFeature(@Nullable Context context) {
         if (context == null) {
             context = ApplicationLoader.applicationContext;
         }
         if (context == null) {
             return false;
+        }
+        ShieldGramConfig.ensureLoaded();
+        if (ShieldGramConfig.customBiometricHud && hasFrontCamera(context)) {
+            return true;
         }
         try {
             PackageManager pm = context.getPackageManager();
@@ -90,7 +158,6 @@ public final class ShieldBiometricHelper {
                     || pm.hasSystemFeature("oppo.hardware.face.support")) {
                 return true;
             }
-            // Samsung One UI provides system 2D Face Recognition on virtually all devices with a front camera
             if (isSamsungDevice() && Build.VERSION.SDK_INT >= 28 && pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT)) {
                 return true;
             }
@@ -100,10 +167,6 @@ public final class ShieldBiometricHelper {
         return false;
     }
 
-    /**
-     * Checks whether any system biometric (Face Unlock Class 2 / Weak OR Fingerprint / Class 3 Strong)
-     * is enrolled and ready to authenticate right now.
-     */
     public static boolean canAuthenticate(@Nullable Context context) {
         if (Build.VERSION.SDK_INT < 23) {
             return false;
@@ -111,14 +174,26 @@ public final class ShieldBiometricHelper {
         if (context == null) {
             context = ApplicationLoader.applicationContext;
         }
-        if (context == null || !AndroidUtilities.isKeyguardSecure()) {
+        if (context == null) {
             return false;
         }
         ShieldGramConfig.ensureLoaded();
+
+        // 0. Custom ShieldGram Biometric Special Interface (Face Camera2 Vision + Silent Hardware Fingerprint)
+        if (ShieldGramConfig.customBiometricHud) {
+            if (SharedConfig.useFingerprintLock && hasHardwareFingerprintReady(context)) {
+                return true;
+            }
+            if (SharedConfig.useFaceLock && hasFrontCamera(context)) {
+                return true;
+            }
+        }
+
+        if (!AndroidUtilities.isKeyguardSecure()) {
+            return false;
+        }
         final boolean allowFaceWeak = SharedConfig.useFaceLock;
 
-        // 1. Android 11+ (API 30+): query native android.hardware.biometrics.BiometricManager directly
-        // so Samsung One UI Class 2 Face Recognition (BIOMETRIC_WEAK) is never filtered out.
         if (Build.VERSION.SDK_INT >= 30) {
             try {
                 android.hardware.biometrics.BiometricManager nativeBm =
@@ -144,7 +219,6 @@ public final class ShieldBiometricHelper {
             }
         }
 
-        // 2. Android 10 (API 29): native BiometricManager.canAuthenticate() covers Samsung Face & Fingerprint
         if (Build.VERSION.SDK_INT == 29 && allowFaceWeak) {
             try {
                 android.hardware.biometrics.BiometricManager nativeBm =
@@ -157,7 +231,6 @@ public final class ShieldBiometricHelper {
             }
         }
 
-        // 3. AndroidX BiometricManager check
         try {
             BiometricManager bm = BiometricManager.from(context);
             int authFlags = allowFaceWeak
@@ -170,7 +243,6 @@ public final class ShieldBiometricHelper {
             FileLog.e(e);
         }
 
-        // 4. Legacy FingerprintManager fallback for older Android 6-8 devices
         try {
             FingerprintManagerCompat fm = FingerprintManagerCompat.from(context);
             if (fm.isHardwareDetected() && fm.hasEnrolledFingerprints()) {
@@ -183,10 +255,6 @@ public final class ShieldBiometricHelper {
         return false;
     }
 
-    /**
-     * Checks whether the device supports biometric hardware at all (even if user hasn't enrolled yet),
-     * so settings toggles are always visible on capable phones.
-     */
     public static boolean isHardwareSupported(@Nullable Context context) {
         if (Build.VERSION.SDK_INT < 23) {
             return false;
@@ -197,34 +265,8 @@ public final class ShieldBiometricHelper {
         if (context == null) {
             return false;
         }
-        if (hasFaceFeature(context)) {
+        if (hasFrontCamera(context) || hasFaceFeature(context)) {
             return true;
-        }
-        if (Build.VERSION.SDK_INT >= 30) {
-            try {
-                android.hardware.biometrics.BiometricManager nativeBm =
-                        context.getSystemService(android.hardware.biometrics.BiometricManager.class);
-                if (nativeBm != null) {
-                    int res = nativeBm.canAuthenticate(
-                            android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_STRONG
-                                    | android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_WEAK);
-                    if (res == android.hardware.biometrics.BiometricManager.BIOMETRIC_SUCCESS
-                            || res == android.hardware.biometrics.BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED) {
-                        return true;
-                    }
-                }
-            } catch (Throwable e) {
-                FileLog.e(e);
-            }
-        }
-        try {
-            BiometricManager bm = BiometricManager.from(context);
-            int res = bm.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG | BiometricManager.Authenticators.BIOMETRIC_WEAK);
-            if (res == BiometricManager.BIOMETRIC_SUCCESS || res == BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED) {
-                return true;
-            }
-        } catch (Throwable e) {
-            FileLog.e(e);
         }
         try {
             return FingerprintManagerCompat.from(context).isHardwareDetected();
@@ -236,6 +278,19 @@ public final class ShieldBiometricHelper {
     public static String getDiagnosticSummary(@Nullable Context context) {
         if (context == null) {
             context = ApplicationLoader.applicationContext;
+        }
+        ShieldGramConfig.ensureLoaded();
+        if (ShieldGramConfig.customBiometricHud) {
+            boolean fpReady = hasHardwareFingerprintReady(context);
+            boolean faceCalibrated = ShieldGramConfig.hasEnrolledFaceSignature();
+            if (faceCalibrated && fpReady) {
+                return LocaleController.getString(R.string.ShieldHudStatusDualReady);
+            } else if (faceCalibrated) {
+                return LocaleController.getString(R.string.ShieldHudStatusFaceReady);
+            } else if (fpReady) {
+                return LocaleController.getString(R.string.ShieldHudStatusFpReady);
+            }
+            return LocaleController.getString(R.string.ShieldHudStatusNeedsCalibration);
         }
         boolean faceHw = hasFaceFeature(context);
         boolean samsung = isSamsungDevice();
@@ -257,9 +312,52 @@ public final class ShieldBiometricHelper {
         return LocaleController.getString(R.string.ShieldBioStatusUnavailable);
     }
 
+    public static void launchFaceCalibrationOverlay(@Nullable Activity activity, @Nullable Runnable onDone) {
+        if (activity == null) {
+            activity = LaunchActivity.instance;
+        }
+        if (activity == null || activity.isFinishing()) {
+            return;
+        }
+        View decor = activity.getWindow() != null ? activity.getWindow().getDecorView() : null;
+        if (!(decor instanceof ViewGroup)) {
+            return;
+        }
+        ViewGroup host = (ViewGroup) decor;
+        ShieldBiometricHudOverlay hud = new ShieldBiometricHudOverlay(
+                activity,
+                ShieldBiometricHudOverlay.MODE_ENROLL_FACE,
+                true,
+                false,
+                new ShieldBiometricHudOverlay.Callback() {
+                    @Override
+                    public void onAuthenticated(boolean viaFace) {
+                    }
+
+                    @Override
+                    public void onEnrollmentCompleted() {
+                        SharedConfig.useFaceLock = true;
+                        SharedConfig.saveConfig();
+                        if (onDone != null) {
+                            onDone.run();
+                        }
+                    }
+
+                    @Override
+                    public void onDismissToManualPasscode() {
+                        if (onDone != null) {
+                            onDone.run();
+                        }
+                    }
+                }
+        );
+        hud.showAnimated(host);
+    }
+
     @Nullable
     public static CancellationHandle authenticate(
             @Nullable Activity activity,
+            @Nullable ViewGroup customHudHost,
             @Nullable CharSequence title,
             @Nullable CharSequence subtitle,
             @Nullable CharSequence negativeButtonText,
@@ -274,11 +372,75 @@ public final class ShieldBiometricHelper {
         if (activity == null || activity.isFinishing()) {
             return null;
         }
+        ShieldGramConfig.ensureLoaded();
+
+        // 1. Custom in-app ShieldGram Biometric Special Interface (NO stock Android BiometricPrompt!)
+        if (ShieldGramConfig.customBiometricHud && customHudHost != null) {
+            boolean wantFace = SharedConfig.useFaceLock && hasFrontCamera(activity);
+            boolean wantFp = SharedConfig.useFingerprintLock && hasHardwareFingerprintReady(activity);
+            if (wantFace || wantFp) {
+                final CancellationHandle handle = new CancellationHandle();
+                ShieldBiometricHudOverlay overlay = new ShieldBiometricHudOverlay(
+                        activity,
+                        ShieldBiometricHudOverlay.MODE_UNLOCK,
+                        wantFace,
+                        wantFp,
+                        new ShieldBiometricHudOverlay.Callback() {
+                            @Override
+                            public void onAuthenticated(boolean viaFace) {
+                                handle.customHudOverlay = null;
+                                callback.onSucceeded();
+                            }
+
+                            @Override
+                            public void onEnrollmentCompleted() {
+                            }
+
+                            @Override
+                            public void onDismissToManualPasscode() {
+                                handle.customHudOverlay = null;
+                                if (!handle.cancelled) {
+                                    callback.onFallbackToPasscode(negativeButtonText);
+                                }
+                            }
+                        }
+                );
+                handle.customHudOverlay = overlay;
+                overlay.showAnimated(customHudHost);
+                return handle;
+            }
+        }
+
+        return authenticateSystemPrompt(activity, title, subtitle, negativeButtonText, callback);
+    }
+
+    @Nullable
+    public static CancellationHandle authenticate(
+            @Nullable Activity activity,
+            @Nullable CharSequence title,
+            @Nullable CharSequence subtitle,
+            @Nullable CharSequence negativeButtonText,
+            @NonNull AuthCallback callback
+    ) {
+        ViewGroup decorHost = null;
+        if (activity != null && activity.getWindow() != null && activity.getWindow().getDecorView() instanceof ViewGroup) {
+            decorHost = (ViewGroup) activity.getWindow().getDecorView();
+        }
+        return authenticate(activity, decorHost, title, subtitle, negativeButtonText, callback);
+    }
+
+    @Nullable
+    private static CancellationHandle authenticateSystemPrompt(
+            @NonNull Activity activity,
+            @Nullable CharSequence title,
+            @Nullable CharSequence subtitle,
+            @Nullable CharSequence negativeButtonText,
+            @NonNull AuthCallback callback
+    ) {
         if (!canAuthenticate(activity)) {
             return null;
         }
 
-        ShieldGramConfig.ensureLoaded();
         final boolean allowFace = SharedConfig.useFaceLock;
         final boolean confirmationRequired = !ShieldGramConfig.instantFaceUnlock;
         final CharSequence promptTitle = !TextUtils.isEmpty(title)
@@ -294,10 +456,6 @@ public final class ShieldBiometricHelper {
         final Executor executor = ContextCompat.getMainExecutor(activity);
         final CancellationHandle handle = new CancellationHandle();
 
-        // Preferred path on Android 11+ (API 30+) and Android 10 (API 29) when Face Unlock is enabled:
-        // Use the platform's native android.hardware.biometrics.BiometricPrompt directly!
-        // Why: androidx.biometric:1.1.0 has legacy Samsung device quirks that force FingerprintDialogFragment
-        // on certain Galaxy models and block Samsung One UI's native Face Recognition sheet.
         if (Build.VERSION.SDK_INT >= 30 || (Build.VERSION.SDK_INT == 29 && allowFace)) {
             try {
                 android.hardware.biometrics.BiometricPrompt.Builder builder =
@@ -314,9 +472,7 @@ public final class ShieldBiometricHelper {
                             : android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_STRONG;
                     builder.setAllowedAuthenticators(authenticators);
                 }
-                builder.setNegativeButton(negText, executor, (dialog, which) -> {
-                    callback.onFallbackToPasscode(negText);
-                });
+                builder.setNegativeButton(negText, executor, (dialog, which) -> callback.onFallbackToPasscode(negText));
 
                 android.hardware.biometrics.BiometricPrompt nativePrompt = builder.build();
                 CancellationSignal signal = new CancellationSignal();
@@ -325,13 +481,11 @@ public final class ShieldBiometricHelper {
                 nativePrompt.authenticate(signal, executor, new android.hardware.biometrics.BiometricPrompt.AuthenticationCallback() {
                     @Override
                     public void onAuthenticationSucceeded(android.hardware.biometrics.BiometricPrompt.AuthenticationResult result) {
-                        FileLog.d("ShieldBiometricHelper native onAuthenticationSucceeded");
                         callback.onSucceeded();
                     }
 
                     @Override
                     public void onAuthenticationError(int errorCode, CharSequence errString) {
-                        FileLog.d("ShieldBiometricHelper native onAuthenticationError " + errorCode + ": " + errString);
                         if (!handle.cancelled) {
                             callback.onFallbackToPasscode(errString);
                         }
@@ -339,18 +493,15 @@ public final class ShieldBiometricHelper {
 
                     @Override
                     public void onAuthenticationFailed() {
-                        FileLog.d("ShieldBiometricHelper native onAuthenticationFailed (continuing scan)");
                         callback.onTransientFailure();
                     }
                 });
                 return handle;
             } catch (Throwable e) {
                 FileLog.e(e);
-                // Fall through to AndroidX BiometricPrompt below if anything unexpected occurs
             }
         }
 
-        // Fallback path for Android 6.0 - 9.0 (API 23-28) or if platform builder threw
         FragmentActivity fragmentActivity = null;
         if (activity instanceof FragmentActivity) {
             fragmentActivity = (FragmentActivity) activity;
@@ -361,7 +512,6 @@ public final class ShieldBiometricHelper {
             return null;
         }
 
-        // Ensure legacy keystore key doesn't block non-crypto biometric unlock
         if (!allowFace && Build.VERSION.SDK_INT >= 23 && !FingerprintController.isKeyReady()) {
             FingerprintController.checkKeyReady(false);
         }
@@ -370,7 +520,6 @@ public final class ShieldBiometricHelper {
             BiometricPrompt prompt = new BiometricPrompt(fragmentActivity, executor, new BiometricPrompt.AuthenticationCallback() {
                 @Override
                 public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
-                    FileLog.d("ShieldBiometricHelper androidx onAuthenticationError " + errorCode + ": " + errString);
                     if (!handle.cancelled) {
                         callback.onFallbackToPasscode(errString);
                     }
@@ -378,13 +527,11 @@ public final class ShieldBiometricHelper {
 
                 @Override
                 public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
-                    FileLog.d("ShieldBiometricHelper androidx onAuthenticationSucceeded");
                     callback.onSucceeded();
                 }
 
                 @Override
                 public void onAuthenticationFailed() {
-                    FileLog.d("ShieldBiometricHelper androidx onAuthenticationFailed");
                     callback.onTransientFailure();
                 }
             });

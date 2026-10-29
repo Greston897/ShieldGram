@@ -22,7 +22,6 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 
 import org.telegram.messenger.AndroidUtilities;
-import org.telegram.messenger.R;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
@@ -38,7 +37,8 @@ public class ShieldHeaderLogoDrawable extends Drawable {
     private final Paint badgeBgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint badgeBorderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF pillRect = new RectF();
-    private Drawable shieldIcon;
+    private Drawable cachedCrestDrawable;
+    private int cachedCrestResId;
     private int tintColor = 0xFFFFFFFF;
     private int alphaValue = 255;
 
@@ -51,16 +51,21 @@ public class ShieldHeaderLogoDrawable extends Drawable {
         titlePaint.setLetterSpacing(-0.015f);
 
         pillPaint.setTypeface(AndroidUtilities.bold());
-        pillPaint.setTextSize(dpf2(9.5f));
-        pillPaint.setLetterSpacing(0.05f);
+        pillPaint.setTextSize(dpf2(9.2f));
+        pillPaint.setLetterSpacing(0.06f);
 
         badgeBorderPaint.setStyle(Paint.Style.STROKE);
         badgeBorderPaint.setStrokeWidth(dpf2(1f));
+    }
 
-        shieldIcon = ContextCompat.getDrawable(context, R.drawable.ic_sg_shield);
-        if (shieldIcon != null) {
-            shieldIcon = shieldIcon.mutate();
+    private Drawable resolveCrestDrawable() {
+        int resId = ShieldGramConfig.getBrandCrestResId();
+        if (cachedCrestDrawable == null || cachedCrestResId != resId) {
+            cachedCrestResId = resId;
+            Drawable d = ContextCompat.getDrawable(context, resId);
+            cachedCrestDrawable = d != null ? d.mutate() : null;
         }
+        return cachedCrestDrawable;
     }
 
     private String resolveTitleText() {
@@ -87,7 +92,14 @@ public class ShieldHeaderLogoDrawable extends Drawable {
 
     private boolean shouldShowArmedPill() {
         return ShieldGramConfig.headerStyle == ShieldGramConfig.HEADER_STYLE_SHIELD_BADGE
-                && !SharedConfig.passcodeHash.isEmpty();
+                && (!SharedConfig.passcodeHash.isEmpty() || ShieldGramConfig.isRoyalGoldActive());
+    }
+
+    private String resolveBadgeLabel() {
+        if (!SharedConfig.passcodeHash.isEmpty()) {
+            return "ARMED";
+        }
+        return ShieldGramConfig.isRoyalGoldActive() ? "ROYAL" : "SHIELD";
     }
 
     @Override
@@ -95,17 +107,17 @@ public class ShieldHeaderLogoDrawable extends Drawable {
         String text = resolveTitleText();
         float w = titlePaint.measureText(text);
         if (shouldShowShieldEmblem()) {
-            w += dp(26);
+            w += dp(30);
         }
         if (shouldShowArmedPill()) {
-            w += dp(8) + pillPaint.measureText("SHIELD") + dp(12);
+            w += dp(8) + pillPaint.measureText(resolveBadgeLabel()) + dp(12);
         }
-        return Math.max(dp(96), (int) Math.ceil(w + dp(4)));
+        return Math.max(dp(104), (int) Math.ceil(w + dp(4)));
     }
 
     @Override
     public int getIntrinsicHeight() {
-        return dp(24);
+        return dp(26);
     }
 
     @Override
@@ -114,41 +126,56 @@ public class ShieldHeaderLogoDrawable extends Drawable {
         if (b.isEmpty()) {
             return;
         }
+        final boolean gold = ShieldGramConfig.isRoyalGoldActive();
         final int textColor = Theme.getColor(Theme.key_telegram_color_dialogsLogo);
-        final int accent1 = Theme.getColor(Theme.key_featuredStickers_addButton);
-        final int accent2 = 0xFF38BDF8;
+        final int accent1 = ShieldGramConfig.getSignatureAccentColor(true);
+        final int accent2 = ShieldGramConfig.getSignatureSecondaryColor(true);
 
         float x = b.left;
         float cy = b.centerY();
 
-        if (shouldShowShieldEmblem() && shieldIcon != null) {
-            int iconSize = dp(20);
-            int iconTop = (int) (cy - iconSize / 2f);
-            shieldIcon.setBounds((int) x, iconTop, (int) x + iconSize, iconTop + iconSize);
-            shieldIcon.setTint(ShieldGramConfig.cyberGlowAccents ? accent1 : textColor);
-            shieldIcon.setAlpha(alphaValue);
-            shieldIcon.draw(canvas);
-            x += iconSize + dp(6);
+        if (shouldShowShieldEmblem()) {
+            Drawable crest = resolveCrestDrawable();
+            if (crest != null) {
+                int iconSize = dp(24);
+                int iconTop = (int) (cy - iconSize / 2f);
+                crest.setBounds((int) x, iconTop, (int) x + iconSize, iconTop + iconSize);
+                crest.setAlpha(alphaValue);
+                crest.draw(canvas);
+                x += iconSize + dp(7);
+            }
         }
 
         String text = resolveTitleText();
-        titlePaint.setColor(textColor != 0 ? textColor : tintColor);
+        if (gold && ShieldGramConfig.cyberGlowAccents) {
+            LinearGradient titleGrad = new LinearGradient(
+                    x, cy - dp(10), x + titlePaint.measureText(text), cy + dp(10),
+                    new int[]{0xFFFFF4D2, 0xFFF2C955, 0xFFD9A62E},
+                    new float[]{0f, 0.55f, 1f},
+                    Shader.TileMode.CLAMP
+            );
+            titlePaint.setShader(titleGrad);
+        } else {
+            titlePaint.setShader(null);
+            titlePaint.setColor(textColor != 0 ? textColor : tintColor);
+        }
         titlePaint.setAlpha(alphaValue);
         Paint.FontMetrics fm = titlePaint.getFontMetrics();
         float baseline = cy - (fm.ascent + fm.descent) / 2f;
         canvas.drawText(text, x, baseline, titlePaint);
+        titlePaint.setShader(null);
         x += titlePaint.measureText(text);
 
         if (shouldShowArmedPill()) {
             x += dp(7);
-            String badge = "SHIELD";
+            String badge = resolveBadgeLabel();
             float bw = pillPaint.measureText(badge) + dp(11);
             float bh = dpf2(15.5f);
             pillRect.set(x, cy - bh / 2f, x + bw, cy + bh / 2f);
 
             LinearGradient bgGrad = new LinearGradient(
                     pillRect.left, pillRect.top, pillRect.right, pillRect.bottom,
-                    ColorUtils.setAlphaComponent(accent1, (int) (46 * (alphaValue / 255f))),
+                    ColorUtils.setAlphaComponent(accent1, (int) (54 * (alphaValue / 255f))),
                     ColorUtils.setAlphaComponent(accent2, (int) (36 * (alphaValue / 255f))),
                     Shader.TileMode.CLAMP
             );
@@ -156,10 +183,10 @@ public class ShieldHeaderLogoDrawable extends Drawable {
             canvas.drawRoundRect(pillRect, bh / 2f, bh / 2f, badgeBgPaint);
             badgeBgPaint.setShader(null);
 
-            badgeBorderPaint.setColor(ColorUtils.setAlphaComponent(accent1, (int) (130 * (alphaValue / 255f))));
+            badgeBorderPaint.setColor(ColorUtils.setAlphaComponent(accent1, (int) (145 * (alphaValue / 255f))));
             canvas.drawRoundRect(pillRect, bh / 2f, bh / 2f, badgeBorderPaint);
 
-            pillPaint.setColor(ShieldGramConfig.cyberGlowAccents ? 0xFF7CA6FF : accent1);
+            pillPaint.setColor(gold ? 0xFFF7D774 : (ShieldGramConfig.cyberGlowAccents ? 0xFF8AB4FF : accent1));
             pillPaint.setAlpha(alphaValue);
             Paint.FontMetrics pfm = pillPaint.getFontMetrics();
             float pBaseline = cy - (pfm.ascent + pfm.descent) / 2f;
@@ -175,7 +202,6 @@ public class ShieldHeaderLogoDrawable extends Drawable {
 
     @Override
     public void setColorFilter(@Nullable ColorFilter colorFilter) {
-        // Keep Cyber Sapphire accent crisp while respecting ActionBar title colors via Theme
     }
 
     @Override

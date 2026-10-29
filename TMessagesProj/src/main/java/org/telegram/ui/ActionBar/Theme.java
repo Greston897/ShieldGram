@@ -1532,6 +1532,8 @@ public class Theme {
                 return getString(R.string.ThemeNight);
             } else if ("Cyber Sapphire".equals(name)) {
                 return getString(R.string.ShieldThemeCyberSapphire);
+            } else if ("Royal Gold".equals(name)) {
+                return getString(R.string.ShieldThemeRoyalGold);
             } else if ("Shield Obsidian".equals(name)) {
                 return getString(R.string.ShieldThemeObsidian);
             } else if ("Royal Indigo".equals(name)) {
@@ -1653,7 +1655,8 @@ public class Theme {
                 return isDark == DARK;
             }
             if ("Dark Blue".equals(name) || "Night".equals(name)
-                    || "Cyber Sapphire".equals(name) || "Shield Obsidian".equals(name) || "Royal Indigo".equals(name)) {
+                    || "Cyber Sapphire".equals(name) || "Royal Gold".equals(name)
+                    || "Shield Obsidian".equals(name) || "Royal Indigo".equals(name)) {
                 isDark = DARK;
             } else if ("Blue".equals(name) || "Arctic Blue".equals(name) || "Day".equals(name)) {
                 isDark = LIGHT;
@@ -4040,6 +4043,16 @@ public class Theme {
         themeInfo.sortIndex = 0;
         themes.add(themeInfo);
         themesDict.put("Cyber Sapphire", currentDayTheme = currentNightTheme = themeInfo);
+
+        themeInfo = new ThemeInfo();
+        themeInfo.name = "Royal Gold";
+        themeInfo.assetName = "royal_gold.attheme";
+        themeInfo.previewBackgroundColor = 0xff0e0c09;
+        themeInfo.previewInColor = 0xff18140e;
+        themeInfo.previewOutColor = 0xff473411;
+        themeInfo.sortIndex = 0;
+        themes.add(themeInfo);
+        themesDict.put("Royal Gold", themeInfo);
 
         themeInfo = new ThemeInfo();
         themeInfo.name = "Shield Obsidian";

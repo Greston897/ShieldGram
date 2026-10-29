@@ -155,8 +155,11 @@ public class ShieldPatternView extends View {
         if (state == STATE_SUCCESS) {
             return 0xFF34D399;
         }
+        if (ShieldGramConfig.isRoyalGoldActive()) {
+            return 0xFFF2C955;
+        }
         if (lockScreenMode) {
-            return 0xFF5B8CFF;
+            return ShieldGramConfig.getSignatureAccentColor(true);
         }
         return Theme.getColor(Theme.key_featuredStickers_addButton);
     }
@@ -168,7 +171,10 @@ public class ShieldPatternView extends View {
         if (state == STATE_SUCCESS) {
             return 0xFF10B981;
         }
-        return 0xFF38BDF8;
+        if (ShieldGramConfig.isRoyalGoldActive()) {
+            return 0xFFC89628;
+        }
+        return ShieldGramConfig.getSignatureSecondaryColor(true);
     }
 
     private int getIdleNodeColor() {

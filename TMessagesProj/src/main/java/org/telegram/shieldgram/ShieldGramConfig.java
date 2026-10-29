@@ -13,14 +13,17 @@ import org.telegram.messenger.FileLog;
 import org.telegram.messenger.ImageLoader;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
+import org.telegram.messenger.R;
 import org.telegram.messenger.SecretChatHelper;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
 import org.telegram.tgnet.TLRPC;
+import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Adapters.DialogsSearchAdapter;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public final class ShieldGramConfig {
 
@@ -33,6 +36,12 @@ public final class ShieldGramConfig {
     public static final int THEME_SHIELD_OBSIDIAN = 1;
     public static final int THEME_ROYAL_INDIGO = 2;
     public static final int THEME_CLASSIC_NIGHT = 3;
+    public static final int THEME_ROYAL_GOLD = 4;
+
+    // Signature accent palettes
+    public static final int ACCENT_SAPPHIRE = 0;
+    public static final int ACCENT_ROYAL_GOLD = 1;
+    public static final int ACCENT_EMERALD = 2;
 
     // Avatar shapes
     public static final int AVATAR_SHAPE_CIRCLE = 0;
@@ -56,18 +65,23 @@ public final class ShieldGramConfig {
     // Visual & Layout customization state
     public static int themePreset = THEME_CYBER_SAPPHIRE;
     public static String activeThemeKey = "Cyber Sapphire";
+    public static int accentPalette = ACCENT_SAPPHIRE;
     public static int avatarShape = AVATAR_SHAPE_SQUIRCLE;
     public static int glassDockMode = DOCK_MODE_FLOATING;
     public static int folderTabStyle = FOLDER_TAB_PILLS;
     public static int headerStyle = HEADER_STYLE_SHIELD_BADGE;
+    public static int bubbleCornerRadius = 18;
 
     public static boolean modernChatCards = true;
     public static boolean cyberGlowAccents = true;
+    public static boolean chatGlassInputBar = true;
     public static boolean useShieldCustomIcons = true;
     public static boolean showQuickLockInHeader = true;
 
-    // Biometric & Samsung Face Unlock behavior
+    // Custom ShieldGram Special Biometric Interface (Face HUD + Hardware Fingerprint HUD)
+    public static boolean customBiometricHud = true;
     public static boolean instantFaceUnlock = true;
+    public static String faceSignatureData = "";
 
     // Duress / Panic Decoy Mode state
     public static boolean duressEnabled = false;
@@ -94,16 +108,22 @@ public final class ShieldGramConfig {
             SharedPreferences prefs = ApplicationLoader.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
             themePreset = prefs.getInt("themePreset", THEME_CYBER_SAPPHIRE);
             activeThemeKey = prefs.getString("activeThemeKey", "Cyber Sapphire");
+            accentPalette = prefs.getInt("accentPalette", ACCENT_SAPPHIRE);
             avatarShape = prefs.getInt("avatarShape", AVATAR_SHAPE_SQUIRCLE);
             glassDockMode = prefs.getInt("glassDockMode", DOCK_MODE_FLOATING);
             folderTabStyle = prefs.getInt("folderTabStyle", FOLDER_TAB_PILLS);
             headerStyle = prefs.getInt("headerStyle", HEADER_STYLE_SHIELD_BADGE);
+            bubbleCornerRadius = prefs.getInt("bubbleCornerRadius", 18);
 
             modernChatCards = prefs.getBoolean("modernChatCards", true);
             cyberGlowAccents = prefs.getBoolean("cyberGlowAccents", true);
+            chatGlassInputBar = prefs.getBoolean("chatGlassInputBar", true);
             useShieldCustomIcons = prefs.getBoolean("useShieldCustomIcons", true);
             showQuickLockInHeader = prefs.getBoolean("showQuickLockInHeader", true);
+
+            customBiometricHud = prefs.getBoolean("customBiometricHud", true);
             instantFaceUnlock = prefs.getBoolean("instantFaceUnlock", true);
+            faceSignatureData = prefs.getString("faceSignatureData", "");
 
             duressEnabled = prefs.getBoolean("duressEnabled", false);
             duressPasscodeHash = prefs.getString("duressPasscodeHash", "");
@@ -142,16 +162,22 @@ public final class ShieldGramConfig {
                 SharedPreferences.Editor e = prefs.edit();
                 e.putInt("themePreset", themePreset);
                 e.putString("activeThemeKey", activeThemeKey);
+                e.putInt("accentPalette", accentPalette);
                 e.putInt("avatarShape", avatarShape);
                 e.putInt("glassDockMode", glassDockMode);
                 e.putInt("folderTabStyle", folderTabStyle);
                 e.putInt("headerStyle", headerStyle);
+                e.putInt("bubbleCornerRadius", bubbleCornerRadius);
 
                 e.putBoolean("modernChatCards", modernChatCards);
                 e.putBoolean("cyberGlowAccents", cyberGlowAccents);
+                e.putBoolean("chatGlassInputBar", chatGlassInputBar);
                 e.putBoolean("useShieldCustomIcons", useShieldCustomIcons);
                 e.putBoolean("showQuickLockInHeader", showQuickLockInHeader);
+
+                e.putBoolean("customBiometricHud", customBiometricHud);
                 e.putBoolean("instantFaceUnlock", instantFaceUnlock);
+                e.putString("faceSignatureData", faceSignatureData != null ? faceSignatureData : "");
 
                 e.putBoolean("duressEnabled", duressEnabled);
                 e.putString("duressPasscodeHash", duressPasscodeHash);
@@ -177,6 +203,10 @@ public final class ShieldGramConfig {
         ensureLoaded();
         themePreset = preset;
         switch (preset) {
+            case THEME_ROYAL_GOLD:
+                activeThemeKey = "Royal Gold";
+                accentPalette = ACCENT_ROYAL_GOLD;
+                break;
             case THEME_SHIELD_OBSIDIAN:
                 activeThemeKey = "Shield Obsidian";
                 break;
@@ -189,9 +219,66 @@ public final class ShieldGramConfig {
             case THEME_CYBER_SAPPHIRE:
             default:
                 activeThemeKey = "Cyber Sapphire";
+                if (accentPalette == ACCENT_ROYAL_GOLD) {
+                    accentPalette = ACCENT_SAPPHIRE;
+                }
                 break;
         }
         save();
+    }
+
+    public static void setAccentPalette(int palette) {
+        ensureLoaded();
+        accentPalette = palette;
+        save();
+    }
+
+    public static boolean isRoyalGoldActive() {
+        ensureLoaded();
+        if (accentPalette == ACCENT_ROYAL_GOLD || themePreset == THEME_ROYAL_GOLD) {
+            return true;
+        }
+        try {
+            Theme.ThemeInfo current = Theme.getActiveTheme();
+            if (current != null && "Royal Gold".equals(current.name)) {
+                return true;
+            }
+        } catch (Throwable ignore) {
+        }
+        return false;
+    }
+
+    public static int getSignatureAccentColor(boolean dark) {
+        ensureLoaded();
+        if (isRoyalGoldActive()) {
+            return dark ? 0xFFF2C955 : 0xFFB8860B;
+        }
+        if (accentPalette == ACCENT_EMERALD) {
+            return dark ? 0xFF34D399 : 0xFF059669;
+        }
+        return dark ? 0xFF4C8DFF : 0xFF2563EB;
+    }
+
+    public static int getSignatureSecondaryColor(boolean dark) {
+        ensureLoaded();
+        if (isRoyalGoldActive()) {
+            return dark ? 0xFFC89628 : 0xFF996B15;
+        }
+        if (accentPalette == ACCENT_EMERALD) {
+            return dark ? 0xFF10B981 : 0xFF047857;
+        }
+        return dark ? 0xFF2B63D9 : 0xFF1D4ED8;
+    }
+
+    public static int getBrandCrestResId() {
+        ensureLoaded();
+        if (isRoyalGoldActive()) {
+            return R.drawable.sg_crest_gold;
+        }
+        if (themePreset == THEME_SHIELD_OBSIDIAN) {
+            return R.drawable.sg_crest_obsidian;
+        }
+        return R.drawable.sg_crest_sapphire;
     }
 
     public static void setAvatarShape(int shape) {
@@ -218,6 +305,12 @@ public final class ShieldGramConfig {
         save();
     }
 
+    public static void setBubbleCornerRadius(int radiusDp) {
+        ensureLoaded();
+        bubbleCornerRadius = Math.max(10, Math.min(24, radiusDp));
+        save();
+    }
+
     public static void setModernChatCards(boolean enabled) {
         ensureLoaded();
         modernChatCards = enabled;
@@ -227,6 +320,12 @@ public final class ShieldGramConfig {
     public static void setCyberGlowAccents(boolean enabled) {
         ensureLoaded();
         cyberGlowAccents = enabled;
+        save();
+    }
+
+    public static void setChatGlassInputBar(boolean enabled) {
+        ensureLoaded();
+        chatGlassInputBar = enabled;
         save();
     }
 
@@ -242,10 +341,80 @@ public final class ShieldGramConfig {
         save();
     }
 
+    public static void setCustomBiometricHud(boolean enabled) {
+        ensureLoaded();
+        customBiometricHud = enabled;
+        save();
+    }
+
     public static void setInstantFaceUnlock(boolean enabled) {
         ensureLoaded();
         instantFaceUnlock = enabled;
         save();
+    }
+
+    // Custom Face Recognition Signature Storage
+    public static boolean hasEnrolledFaceSignature() {
+        ensureLoaded();
+        float[] vec = getEnrolledFaceVector();
+        return vec != null && vec.length >= 6;
+    }
+
+    public static void saveEnrolledFaceVector(float[] vector) {
+        ensureLoaded();
+        if (vector == null || vector.length < 6) {
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < vector.length; i++) {
+            if (i > 0) sb.append(',');
+            sb.append(String.format(Locale.US, "%.5f", vector[i]));
+        }
+        byte[] raw = sb.toString().getBytes(StandardCharsets.UTF_8);
+        faceSignatureData = Base64.encodeToString(raw, Base64.NO_WRAP);
+        save();
+    }
+
+    public static float[] getEnrolledFaceVector() {
+        ensureLoaded();
+        if (TextUtils.isEmpty(faceSignatureData)) {
+            return null;
+        }
+        try {
+            String decoded = new String(Base64.decode(faceSignatureData, Base64.DEFAULT), StandardCharsets.UTF_8);
+            String[] parts = decoded.split(",");
+            if (parts.length < 6) {
+                return null;
+            }
+            float[] res = new float[parts.length];
+            for (int i = 0; i < parts.length; i++) {
+                res[i] = Float.parseFloat(parts[i]);
+            }
+            return res;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static void clearEnrolledFaceVector() {
+        ensureLoaded();
+        faceSignatureData = "";
+        save();
+    }
+
+    public static boolean matchesEnrolledFaceVector(float[] candidate) {
+        float[] ref = getEnrolledFaceVector();
+        if (ref == null || candidate == null || ref.length != candidate.length) {
+            return false;
+        }
+        float sumSq = 0f;
+        for (int i = 0; i < ref.length; i++) {
+            float d = ref[i] - candidate[i];
+            sumSq += d * d;
+        }
+        float rmsd = (float) Math.sqrt(sumSq / ref.length);
+        // Normalized facial landmark ratios typically vary < 0.055 for the same person across lighting/angles
+        return rmsd <= 0.095f;
     }
 
     public static int getAvatarRoundRadius(int defaultRadiusPx) {
