@@ -1530,6 +1530,12 @@ public class Theme {
                 return getString(R.string.ThemeDay);
             } else if ("Night".equals(name)) {
                 return getString(R.string.ThemeNight);
+            } else if ("Cyber Sapphire".equals(name)) {
+                return getString(R.string.ShieldThemeCyberSapphire);
+            } else if ("Shield Obsidian".equals(name)) {
+                return getString(R.string.ShieldThemeObsidian);
+            } else if ("Royal Indigo".equals(name)) {
+                return getString(R.string.ShieldThemeRoyalIndigo);
             }
             return info != null ? info.title : name;
         }
@@ -1646,15 +1652,23 @@ public class Theme {
             if (isDark != UNKNOWN) {
                 return isDark == DARK;
             }
-            if ("Dark Blue".equals(name) || "Night".equals(name)) {
+            if ("Dark Blue".equals(name) || "Night".equals(name)
+                    || "Cyber Sapphire".equals(name) || "Shield Obsidian".equals(name) || "Royal Indigo".equals(name)) {
                 isDark = DARK;
             } else if ("Blue".equals(name) || "Arctic Blue".equals(name) || "Day".equals(name)) {
                 isDark = LIGHT;
             }
             if (isDark == UNKNOWN) {
                 String[] wallpaperLink = new String[1];
-                SparseIntArray colors = getThemeFileValues(new File(pathToFile), null, wallpaperLink);
-                checkIsDark(colors, this);
+                if (assetName != null) {
+                    SparseIntArray colors = getThemeFileValues(null, assetName, wallpaperLink);
+                    checkIsDark(colors, this);
+                } else if (pathToFile != null) {
+                    SparseIntArray colors = getThemeFileValues(new File(pathToFile), null, wallpaperLink);
+                    checkIsDark(colors, this);
+                } else {
+                    isDark = LIGHT;
+                }
             }
             return isDark == DARK;
         }
@@ -4025,7 +4039,7 @@ public class Theme {
         themeInfo.previewOutColor = 0xff233d78;
         themeInfo.sortIndex = 0;
         themes.add(themeInfo);
-        themesDict.put("Cyber Sapphire", currentDayTheme = currentNightTheme = defaultTheme = themeInfo);
+        themesDict.put("Cyber Sapphire", currentDayTheme = currentNightTheme = themeInfo);
 
         themeInfo = new ThemeInfo();
         themeInfo.name = "Shield Obsidian";
@@ -4312,7 +4326,10 @@ public class Theme {
             throw new RuntimeException(e);
         }
         if (applyingTheme == null) {
-            applyingTheme = defaultTheme;
+            applyingTheme = themesDict.get("Cyber Sapphire");
+            if (applyingTheme == null) {
+                applyingTheme = defaultTheme;
+            }
         } else {
             currentDayTheme = applyingTheme;
         }
