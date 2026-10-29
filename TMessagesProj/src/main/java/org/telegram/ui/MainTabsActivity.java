@@ -53,6 +53,8 @@ import org.telegram.messenger.R;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
+import org.telegram.shieldgram.ShieldGramConfig;
+import org.telegram.shieldgram.ShieldGramSettingsActivity;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.ActionBarMenuSubItem;
 import org.telegram.ui.ActionBar.BaseFragment;
@@ -622,6 +624,9 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
         });
 
         ItemOptions o = ItemOptions.makeOptions(this, button);
+        o.add(R.drawable.ic_sg_shield, getString(R.string.ShieldGramCenterTitle), () -> {
+            presentFragment(new ShieldGramSettingsActivity());
+        });
         if (UserConfig.getActivatedAccountsCount() < UserConfig.MAX_ACCOUNT_COUNT) {
             o.add(R.drawable.msg_addbot, getString(R.string.AddAccount), () -> {
                 int freeAccounts = 0;
@@ -1061,7 +1066,7 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
         final float isProfile = 1f - MathUtils.clamp(Math.abs(POSITION_PROFILE - animatedPosition), 0, 1);
         final float hide = 1f - AndroidUtilities.getNavigationBarThirdButtonsFactor(0, 1f, navigationBarHeight);
         float alpha = (1f - isProfile * hide) * animatorTabsVisible.getFloatValue();
-        if (tabletLayout) {
+        if (tabletLayout || (ShieldGramConfig.isDockHidden() && (viewPager == null || viewPager.getCurrentPosition() == POSITION_CHATS))) {
             alpha = 0.0f;
         }
 
@@ -1076,12 +1081,13 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
         final int normalY = -(updateLayoutHeight);
         final int hiddenY = normalY + dp(40);
 
-        final float factor = animatorTabsVisible.getFloatValue();
+        final boolean userHidDock = ShieldGramConfig.isDockHidden() && (viewPager == null || viewPager.getCurrentPosition() == POSITION_CHATS);
+        final float factor = userHidDock ? 0f : animatorTabsVisible.getFloatValue();
         final float scale = lerp(0.85f, 1f, factor);
 
         tabsViewWrapper.setTranslationY(lerp(hiddenY, normalY, factor));
-        tabsView.setClickable(factor > 1);
-        tabsView.setEnabled(factor > 1);
+        tabsView.setClickable(factor > 0.5f && !userHidDock);
+        tabsView.setEnabled(factor > 0.5f && !userHidDock);
         tabsView.setAlpha(factor);
         tabsView.setVisibility(factor > 0 ? View.VISIBLE : View.GONE);
     }
@@ -1228,6 +1234,10 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
             for (GlassTabView tabView : tabs) {
                 tabView.updateColorsLottie();
             }
+        }
+        if (tabsViewWrapper != null) {
+            checkUi_tabsPosition();
+            checkUi_fadeView();
         }
     }
 

@@ -67,7 +67,7 @@ public class CodeFieldContainer extends LinearLayout {
                     AndroidUtilities.rectTmp.inset(offset, offset);
                 }
 
-                canvas.drawRoundRect(AndroidUtilities.rectTmp, AndroidUtilities.dp(4), AndroidUtilities.dp(4), paint);
+                canvas.drawRoundRect(AndroidUtilities.rectTmp, AndroidUtilities.dp(8), AndroidUtilities.dp(8), paint);
             }
         }
         super.dispatchDraw(canvas);
@@ -185,9 +185,9 @@ public class CodeFieldContainer extends LinearLayout {
                 int height;
                 int gapSize;
                 if (currentType == TYPE_PASSCODE) {
-                    width = 42;
-                    height = 47;
-                    gapSize = 10;
+                    width = length >= 6 ? 38 : 42;
+                    height = length >= 6 ? 45 : 47;
+                    gapSize = length >= 6 ? 8 : 10;
                 } else if (currentType == LoginActivity.AUTH_TYPE_MISSED_CALL) {
                     width = 28;
                     height = 34;

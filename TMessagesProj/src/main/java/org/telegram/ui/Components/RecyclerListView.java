@@ -2656,7 +2656,29 @@ public class RecyclerListView extends RecyclerView implements IBlur3Capture {
         canvas.restore();
     }
 
+    private final Path shieldSelectorClipPath = new Path();
+
     private void drawSelector(Canvas canvas) {
+        boolean clipDialogCard = selectorView instanceof org.telegram.ui.Cells.DialogCell
+                && !((org.telegram.ui.Cells.DialogCell) selectorView).isTopic;
+        if (clipDialogCard) {
+            Rect b = selectorDrawable.getBounds();
+            if (!b.isEmpty()) {
+                float ix = AndroidUtilities.dpf2(6f);
+                float iy = AndroidUtilities.dpf2(1.5f);
+                float rad = AndroidUtilities.dpf2(14f);
+                shieldSelectorClipPath.rewind();
+                shieldSelectorClipPath.addRoundRect(b.left + ix, b.top + iy, b.right - ix, b.bottom - iy, rad, rad, Path.Direction.CW);
+                canvas.save();
+                canvas.clipPath(shieldSelectorClipPath);
+                if (hasSections()) {
+                    clipChild(canvas, selectorView);
+                }
+                selectorDrawable.draw(canvas);
+                canvas.restore();
+                return;
+            }
+        }
         if (hasSections()) {
             canvas.save();
             clipChild(canvas, selectorView);

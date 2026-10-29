@@ -133,6 +133,9 @@ import org.telegram.messenger.browser.Browser;
 import org.telegram.messenger.utils.FBool;
 import org.telegram.messenger.utils.GradientProtectionDrawable;
 import org.telegram.messenger.utils.SearchTextWatcher;
+import org.telegram.shieldgram.ShieldGramConfig;
+import org.telegram.shieldgram.ShieldGramSettingsActivity;
+import org.telegram.shieldgram.ShieldHeaderLogoDrawable;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.SerializedData;
 import org.telegram.tgnet.TLObject;
@@ -2928,6 +2931,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 .add(NotificationCenter.currentUserPremiumStatusChanged);
 
             observersGroup.addGlobal(NotificationCenter.didSetPasscode);
+            observersGroup.addGlobal(NotificationCenter.didSetNewTheme);
         }
         observersGroup
             .add(NotificationCenter.messagesDeleted)
@@ -3267,7 +3271,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             proxyMenuSubItem.setTextAndIcon(getString(R.string.MenuProxyTitle), 0, proxyDrawable);
             proxyMenuSubItem.setContentDescription(getString(R.string.ProxySettings));
 
-            passcodeItem = menu.addItem(1, R.drawable.outline_header_lock_24);
+            passcodeItem = menu.addItem(1, ShieldGramConfig.useShieldCustomIcons ? R.drawable.ic_sg_lock_quick : R.drawable.outline_header_lock_24);
             passcodeItem.setContentDescription(getString(R.string.AccDescrPasscodeLock));
 
             downloadsItem = menu.addItem(3, new ColorDrawable(Color.TRANSPARENT));
@@ -3513,12 +3517,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             } else {
                 statusDrawable = new AnimatedEmojiDrawable.SwapAnimatedEmojiDrawable(null, dp(26));
                 statusDrawable.center = true;
-                logoDrawable = context.getResources().getDrawable(R.drawable.telegram_logo_2).mutate();
-                logoDrawable.setBounds(0, dp(2), logoDrawable.getIntrinsicWidth(), dp(2) + logoDrawable.getIntrinsicHeight());
-                logoDrawable.setColorFilter(getThemedColor(Theme.key_telegram_color_dialogsLogo), PorterDuff.Mode.MULTIPLY);
-                SpannableStringBuilder ssb = new SpannableStringBuilder(getString(R.string.AppName));
-                ssb.setSpan(new ImageSpan(logoDrawable), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                actionBar.setTitle(ssb, statusDrawable);
+                logoDrawable = new ShieldHeaderLogoDrawable(context, currentAccount);
+                refreshShieldHeaderLogo();
                 updateStatus(UserConfig.getInstance(currentAccount).getCurrentUser(), false);
             }
             if (folderId == 0) {
@@ -10664,6 +10664,24 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             updateVisibleRows(MessagesController.UPDATE_MASK_SEND_STATE);
         } else if (id == NotificationCenter.didSetPasscode) {
             checkUi_itemPasscodeVisibility();
+            refreshShieldHeaderLogo();
+            if (viewPages != null) {
+                for (ViewPage page : viewPages) {
+                    if (page != null && page.dialogsAdapter != null) {
+                        page.updateList(false);
+                    }
+                }
+            }
+        } else if (id == NotificationCenter.didSetNewTheme) {
+            checkUi_itemPasscodeVisibility();
+            refreshShieldHeaderLogo();
+            if (passcodeItem != null) {
+                passcodeItem.setIcon(ShieldGramConfig.useShieldCustomIcons ? R.drawable.ic_sg_lock_quick : R.drawable.outline_header_lock_24);
+            }
+            if (filterTabsView != null) {
+                filterTabsView.updateColors();
+            }
+            updateVisibleRows(0);
         } else if (id == NotificationCenter.needReloadRecentDialogsSearch) {
             if (searchViewPager != null && searchViewPager.dialogsSearchAdapter != null) {
                 searchViewPager.dialogsSearchAdapter.loadRecentSearch();
@@ -10989,7 +11007,25 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     private ArrayList<TLRPC.Dialog> botShareDialogs;
 
     @NonNull
+    private void refreshShieldHeaderLogo() {
+        if (dialogStoriesCell != null) {
+            dialogStoriesCell.updateColors();
+        }
+        if (actionBar == null || logoDrawable == null || folderId != 0 || communityId != 0 || onlySelect) {
+            return;
+        }
+        logoDrawable.setBounds(0, dp(1), logoDrawable.getIntrinsicWidth(), dp(1) + logoDrawable.getIntrinsicHeight());
+        SpannableStringBuilder ssb = new SpannableStringBuilder(getString(R.string.AppName));
+        ssb.setSpan(new ImageSpan(logoDrawable), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        actionBar.setTitle(ssb, statusDrawable);
+    }
+
     public ArrayList<TLRPC.Dialog> getDialogsArray(int currentAccount, int dialogsType, int folderId, boolean frozen) {
+        ArrayList<TLRPC.Dialog> raw = getDialogsArrayRaw(currentAccount, dialogsType, folderId, frozen);
+        return ShieldGramConfig.filterDialogsForDuress(currentAccount, dialogsType, folderId, raw);
+    }
+
+    private ArrayList<TLRPC.Dialog> getDialogsArrayRaw(int currentAccount, int dialogsType, int folderId, boolean frozen) {
         if (frozen && frozenDialogsList != null) {
             return frozenDialogsList;
         }
@@ -13730,6 +13766,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         } else {
             isCurrentThemeDark = Theme.isCurrentThemeDark();
         }
+        io.add(R.drawable.ic_sg_shield, getString(R.string.ShieldGramCenterTitle), () -> {
+            presentFragment(new ShieldGramSettingsActivity());
+        });
         io.add(isCurrentThemeDark ? R.drawable.menu_day_mode_24 : R.drawable.menu_night_mode_24,
                 getString(isCurrentThemeDark ? R.string.SwitchThemeToDay : R.string.SwitchThemeToNight), () -> {
             if (switchingTheme) {
@@ -13741,16 +13780,16 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             if (Theme.getTheme(dayThemeName) == null || Theme.getTheme(dayThemeName).isDark()) {
                 dayThemeName = "Blue";
             }
-            String nightThemeName = preferences.getString("lastDarkTheme", "Dark Blue");
+            String nightThemeName = preferences.getString("lastDarkTheme", "Cyber Sapphire");
             if (Theme.getTheme(nightThemeName) == null || !Theme.getTheme(nightThemeName).isDark()) {
-                nightThemeName = "Dark Blue";
+                nightThemeName = "Cyber Sapphire";
             }
             Theme.ThemeInfo themeInfo = Theme.getActiveTheme();
             if (dayThemeName.equals(nightThemeName)) {
-                if (themeInfo.isDark() || dayThemeName.equals("Dark Blue") || dayThemeName.equals("Night")) {
+                if (themeInfo.isDark() || dayThemeName.equals("Cyber Sapphire") || dayThemeName.equals("Dark Blue") || dayThemeName.equals("Night")) {
                     dayThemeName = "Blue";
                 } else {
-                    nightThemeName = "Dark Blue";
+                    nightThemeName = "Cyber Sapphire";
                 }
             }
 
@@ -13770,11 +13809,13 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             Bundle args = new Bundle();
             presentFragment(new GroupCreateActivity(args));
         });
-        io.add(R.drawable.outline_saved_24, getString(R.string.SavedMessages), () -> {
-            Bundle args = new Bundle();
-            args.putLong("user_id", UserConfig.getInstance(currentAccount).getClientUserId());
-            presentFragment(new ChatActivity(args));
-        });
+        if (!(ShieldGramConfig.duressSessionActive && ShieldGramConfig.duressHideSavedMessages)) {
+            io.add(R.drawable.outline_saved_24, getString(R.string.SavedMessages), () -> {
+                Bundle args = new Bundle();
+                args.putLong("user_id", UserConfig.getInstance(currentAccount).getClientUserId());
+                presentFragment(new ChatActivity(args));
+            });
+        }
         if (ApplicationLoader.applicationLoaderInstance != null) {
             ApplicationLoader.applicationLoaderInstance.addItemOptions(io);
         }
@@ -14144,7 +14185,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     private void checkUi_itemPasscodeVisibility() {
-        final float factor0 = SharedConfig.passcodeHash.isEmpty() ? 0 : 1;
+        final float factor0 = (SharedConfig.passcodeHash.isEmpty() || !ShieldGramConfig.showQuickLockInHeader) ? 0 : 1;
         final float factor1 = 1f - animatorSearchVisible.getFloatValue();
         final float factor2 = 1f - getRightSlidingProgress();
         final float factor3 = 1f - animatorDoneButtonVisible.getFloatValue();

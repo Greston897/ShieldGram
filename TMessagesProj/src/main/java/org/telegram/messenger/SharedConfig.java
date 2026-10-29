@@ -62,7 +62,9 @@ public class SharedConfig {
     private final static int PROXY_CURRENT_SCHEMA_VERSION = PROXY_SCHEMA_V3;
 
     public final static int PASSCODE_TYPE_PIN = 0,
-            PASSCODE_TYPE_PASSWORD = 1;
+            PASSCODE_TYPE_PASSWORD = 1,
+            PASSCODE_TYPE_PIN6 = 2,
+            PASSCODE_TYPE_PATTERN = 3;
     private static int legacyDevicePerformanceClass = -1;
 
     public static boolean loopStickers() {
@@ -202,7 +204,9 @@ public class SharedConfig {
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({
             PASSCODE_TYPE_PIN,
-            PASSCODE_TYPE_PASSWORD
+            PASSCODE_TYPE_PASSWORD,
+            PASSCODE_TYPE_PIN6,
+            PASSCODE_TYPE_PATTERN
     })
     public @interface PasscodeType {}
 
@@ -450,6 +454,7 @@ public class SharedConfig {
                 editor.putInt("autoLockIn", autoLockIn);
                 editor.putInt("lastPauseTime", lastPauseTime);
                 editor.putBoolean("useFingerprint", useFingerprintLock);
+                editor.putBoolean("useFaceLock", useFaceLock);
                 editor.putBoolean("walletUseFingerprintLock", walletUseFingerprintLock);
                 editor.putBoolean("allowScreenCapture", allowScreenCapture);
                 editor.putString("pushString2", pushString);
@@ -529,6 +534,7 @@ public class SharedConfig {
             autoLockIn = preferences.getInt("autoLockIn", 60 * 60);
             lastPauseTime = preferences.getInt("lastPauseTime", 0);
             useFingerprintLock = preferences.getBoolean("useFingerprint", true);
+            useFaceLock = preferences.getBoolean("useFaceLock", true);
             walletUseFingerprintLock = preferences.getBoolean("walletUseFingerprintLock", true);
             allowScreenCapture = preferences.getBoolean("allowScreenCapture", false);
             lastLocalId = preferences.getInt("lastLocalId", -210000);
@@ -880,6 +886,7 @@ public class SharedConfig {
         autoLockIn = 60 * 60;
         lastPauseTime = 0;
         useFingerprintLock = true;
+        useFaceLock = true;
         walletUseFingerprintLock = true;
         isWaitingForPasscodeEnter = false;
         allowScreenCapture = false;
@@ -1732,7 +1739,7 @@ public class SharedConfig {
     }
 
     public static boolean canBlurChat() {
-        return getDevicePerformanceClass() >= (Build.VERSION.SDK_INT >= 31 ? PERFORMANCE_CLASS_AVERAGE : PERFORMANCE_CLASS_HIGH) || BuildVars.DEBUG_PRIVATE_VERSION;
+        return Build.VERSION.SDK_INT >= 31 || getDevicePerformanceClass() >= PERFORMANCE_CLASS_HIGH || BuildVars.DEBUG_PRIVATE_VERSION;
     }
 
     public static boolean chatBlurEnabled() {

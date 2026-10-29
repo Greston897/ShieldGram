@@ -1530,6 +1530,14 @@ public class Theme {
                 return getString(R.string.ThemeDay);
             } else if ("Night".equals(name)) {
                 return getString(R.string.ThemeNight);
+            } else if ("Cyber Sapphire".equals(name)) {
+                return getString(R.string.ShieldThemeCyberSapphire);
+            } else if ("Royal Gold".equals(name)) {
+                return getString(R.string.ShieldThemeRoyalGold);
+            } else if ("Shield Obsidian".equals(name)) {
+                return getString(R.string.ShieldThemeObsidian);
+            } else if ("Royal Indigo".equals(name)) {
+                return getString(R.string.ShieldThemeRoyalIndigo);
             }
             return info != null ? info.title : name;
         }
@@ -1646,15 +1654,24 @@ public class Theme {
             if (isDark != UNKNOWN) {
                 return isDark == DARK;
             }
-            if ("Dark Blue".equals(name) || "Night".equals(name)) {
+            if ("Dark Blue".equals(name) || "Night".equals(name)
+                    || "Cyber Sapphire".equals(name) || "Royal Gold".equals(name)
+                    || "Shield Obsidian".equals(name) || "Royal Indigo".equals(name)) {
                 isDark = DARK;
             } else if ("Blue".equals(name) || "Arctic Blue".equals(name) || "Day".equals(name)) {
                 isDark = LIGHT;
             }
             if (isDark == UNKNOWN) {
                 String[] wallpaperLink = new String[1];
-                SparseIntArray colors = getThemeFileValues(new File(pathToFile), null, wallpaperLink);
-                checkIsDark(colors, this);
+                if (assetName != null) {
+                    SparseIntArray colors = getThemeFileValues(null, assetName, wallpaperLink);
+                    checkIsDark(colors, this);
+                } else if (pathToFile != null) {
+                    SparseIntArray colors = getThemeFileValues(new File(pathToFile), null, wallpaperLink);
+                    checkIsDark(colors, this);
+                } else {
+                    isDark = LIGHT;
+                }
             }
             return isDark == DARK;
         }
@@ -4016,6 +4033,47 @@ public class Theme {
         themes.add(themeInfo);
         themesDict.put("Night", themeInfo);
 
+        // ShieldGram Built-In Signature Themes
+        themeInfo = new ThemeInfo();
+        themeInfo.name = "Cyber Sapphire";
+        themeInfo.assetName = "cyber_sapphire.attheme";
+        themeInfo.previewBackgroundColor = 0xff0e121c;
+        themeInfo.previewInColor = 0xff161f33;
+        themeInfo.previewOutColor = 0xff233d78;
+        themeInfo.sortIndex = 0;
+        themes.add(themeInfo);
+        themesDict.put("Cyber Sapphire", currentDayTheme = currentNightTheme = themeInfo);
+
+        themeInfo = new ThemeInfo();
+        themeInfo.name = "Royal Gold";
+        themeInfo.assetName = "royal_gold.attheme";
+        themeInfo.previewBackgroundColor = 0xff0e0c09;
+        themeInfo.previewInColor = 0xff18140e;
+        themeInfo.previewOutColor = 0xff473411;
+        themeInfo.sortIndex = 0;
+        themes.add(themeInfo);
+        themesDict.put("Royal Gold", themeInfo);
+
+        themeInfo = new ThemeInfo();
+        themeInfo.name = "Shield Obsidian";
+        themeInfo.assetName = "shield_obsidian.attheme";
+        themeInfo.previewBackgroundColor = 0xff05070c;
+        themeInfo.previewInColor = 0xff0e1424;
+        themeInfo.previewOutColor = 0xff1c356c;
+        themeInfo.sortIndex = 0;
+        themes.add(themeInfo);
+        themesDict.put("Shield Obsidian", themeInfo);
+
+        themeInfo = new ThemeInfo();
+        themeInfo.name = "Royal Indigo";
+        themeInfo.assetName = "royal_indigo.attheme";
+        themeInfo.previewBackgroundColor = 0xff0f0e1e;
+        themeInfo.previewInColor = 0xff1c1b36;
+        themeInfo.previewOutColor = 0xff322e7a;
+        themeInfo.sortIndex = 0;
+        themes.add(themeInfo);
+        themesDict.put("Royal Indigo", themeInfo);
+
         String themesString = themeConfig.getString("themes2", null);
 
         int remoteVersion = themeConfig.getInt("remote_version", 0);
@@ -4255,7 +4313,7 @@ public class Theme {
                 oldEditorNew.commit();
             }
 
-            selectedAutoNightType = preferences.getInt("selectedAutoNightType", Build.VERSION.SDK_INT >= 29 ? AUTO_NIGHT_TYPE_SYSTEM : AUTO_NIGHT_TYPE_NONE);
+            selectedAutoNightType = preferences.getInt("selectedAutoNightType", AUTO_NIGHT_TYPE_NONE);
             autoNightScheduleByLocation = preferences.getBoolean("autoNightScheduleByLocation", false);
             autoNightBrighnessThreshold = preferences.getFloat("autoNightBrighnessThreshold", 0.25f);
             autoNightDayStartTime = preferences.getInt("autoNightDayStartTime", 22 * 60);
@@ -4281,7 +4339,10 @@ public class Theme {
             throw new RuntimeException(e);
         }
         if (applyingTheme == null) {
-            applyingTheme = defaultTheme;
+            applyingTheme = themesDict.get("Cyber Sapphire");
+            if (applyingTheme == null) {
+                applyingTheme = defaultTheme;
+            }
         } else {
             currentDayTheme = applyingTheme;
         }

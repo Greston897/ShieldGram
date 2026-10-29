@@ -175,7 +175,7 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
     public int addForumHeightForTags = 11;
     public TLRPC.TL_forumTopic forumTopic;
     public boolean useFromUserAsAvatar;
-    private boolean isTopic;
+    public boolean isTopic;
     private boolean twoLinesForName;
     private boolean nameIsEllipsized;
     private Paint topicCounterPaint;
@@ -4026,9 +4026,15 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
 
         float cornersRadius = dp(8) * cornerProgress;
         if (isSelected) {
-            rect.set(0, 0, getMeasuredWidth(), AndroidUtilities.lerp(getMeasuredHeight(), getCollapsedHeight(), rightFragmentOpenedProgress));
+            rect.set(dpf2(6f), dpf2(1.5f), getMeasuredWidth() - dpf2(6f), AndroidUtilities.lerp(getMeasuredHeight(), getCollapsedHeight(), rightFragmentOpenedProgress) - dpf2(1.5f));
             rect.offset(0, -translateY + collapseOffset);
-            canvas.drawRoundRect(rect, cornersRadius, cornersRadius, Theme.dialogs_tabletSeletedPaint);
+            canvas.drawRoundRect(rect, dpf2(14f), dpf2(14f), Theme.dialogs_tabletSeletedPaint);
+        } else if (!isTopic && checkBox != null && checkBox.getProgress() > 0.01f) {
+            float cp = checkBox.getProgress() * (1f - rightFragmentOpenedProgress);
+            rect.set(dpf2(6f), dpf2(1.5f), getMeasuredWidth() - dpf2(6f), getMeasuredHeight() - translateY - dpf2(1.5f));
+            int selColor = Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider);
+            Theme.dialogs_pinnedPaint.setColor(Theme.multAlpha(selColor, 0.11f * cp));
+            canvas.drawRoundRect(rect, dpf2(14f), dpf2(14f), Theme.dialogs_pinnedPaint);
         }
 
         canvas.save();
