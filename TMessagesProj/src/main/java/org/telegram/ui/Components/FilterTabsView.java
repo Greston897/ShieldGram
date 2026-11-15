@@ -27,7 +27,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
 import android.os.SystemClock;
 import android.text.Layout;
 import android.text.SpannableStringBuilder;
@@ -65,6 +64,7 @@ import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
+import org.telegram.ui.ActionBar.ShieldDrawables;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.blur3.drawable.BlurredBackgroundDrawable;
@@ -491,7 +491,7 @@ public class FilterTabsView extends FrameLayout {
                     float s = animateCounterEnter ? changeProgress : 1f - changeProgress;
                     canvas.scale(s, s, rect.centerX(), rect.centerY());
                 }
-                canvas.drawRoundRect(rect, 11.5f * AndroidUtilities.density, 11.5f * AndroidUtilities.density, counterPaint);
+                ShieldDrawables.drawGradientPill(canvas, rect, counterPaint, AndroidUtilities.dpf2(11.5f));
 
                 if (animateCounterReplace) {
                     float y = countTop;
@@ -819,7 +819,7 @@ public class FilterTabsView extends FrameLayout {
     private int manualScrollingToId = -1;
 
     private int scrollingToChild = -1;
-    private final GradientDrawable selectorDrawable;
+    private final ShieldDrawables.PillDrawable selectorDrawable;
 
     private int tabLineColorKey = Theme.key_actionBarTabLine;
     private int activeTextColorKey = Theme.key_actionBarTabActiveText;
@@ -913,9 +913,7 @@ public class FilterTabsView extends FrameLayout {
         deletePaint.setStrokeCap(Paint.Cap.ROUND);
         deletePaint.setStrokeWidth(dp(1.5f));
 
-        selectorDrawable = new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, null);
-        float rad = AndroidUtilities.dpf2(14);
-        selectorDrawable.setCornerRadii(new float[]{rad, rad, rad, rad, rad, rad, rad, rad});
+        selectorDrawable = new ShieldDrawables.PillDrawable();
         selectorDrawable.setColor(Theme.getColor(tabLineColorKey, resourcesProvider));
 
         setHorizontalScrollBarEnabled(false);
@@ -1327,6 +1325,11 @@ public class FilterTabsView extends FrameLayout {
         invalidate();
     }
 
+    public void setSelectorColor(int color) {
+        selectorDrawable.setColor(color);
+        invalidate();
+    }
+
     public void animateColorsTo(int line, int active, int unactive, int selector, int background) {
         if (colorChangeAnimator != null) {
             colorChangeAnimator.cancel();
@@ -1509,7 +1512,7 @@ public class FilterTabsView extends FrameLayout {
 
             final int y = height / 2 - dp(14);
             selectorDrawable.setBounds((int) (indicatorX - dp(TAB_INTERNAL_PADDING) - add), y, (int) (indicatorX + indicatorWidth + dp(TAB_INTERNAL_PADDING) + add), y + dp(28));
-            selectorDrawable.setAlpha(31);
+            selectorDrawable.setAlpha(255);
             selectorDrawable.draw(canvas);
             canvas.restore();
         }

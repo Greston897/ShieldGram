@@ -48,7 +48,6 @@ import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.net.Uri;
 import android.os.Build;
@@ -14116,10 +14115,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             if (selectedDialogsCountTextView != null) {
                 selectedDialogsCountTextView.setTextColor(getThemedColor(Theme.key_actionBarActionModeDefaultIcon));
             }
-            if (filterTabsView != null && filterTabsView.getSelectorDrawable() instanceof GradientDrawable) {
+            if (filterTabsView != null) {
                 final boolean actionMode = actionBar != null && actionBar.isActionModeShowed();
-                ((GradientDrawable) filterTabsView.getSelectorDrawable()).setColor(getThemedColor(actionMode ? Theme.key_profile_tabSelectedLine : Theme.key_actionBarTabLine));
-                filterTabsView.invalidate();
+                filterTabsView.setSelectorColor(getThemedColor(actionMode ? Theme.key_profile_tabSelectedLine : Theme.key_actionBarTabLine));
             }
             if (actionBar != null) {
                 if (folderId != 0 || communityId != 0) {

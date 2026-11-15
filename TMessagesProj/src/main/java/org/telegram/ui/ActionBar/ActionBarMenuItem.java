@@ -59,7 +59,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.core.view.WindowInsetsCompat;
 
@@ -499,7 +498,7 @@ public class ActionBarMenuItem extends FrameLayout {
         if (subMenuFactory != null) {
             popupLayout.setBackground(subMenuFactory.create(popupLayout, true)
                     .setColorProvider(subMenuProvider)
-                    .setRadius(dp(12))
+                    .setRadius(dp(16))
                     .setPadding(dp(8)));
         }
 
@@ -563,14 +562,14 @@ public class ActionBarMenuItem extends FrameLayout {
                 delegate.onItemClick((Integer) view1.getTag());
             }
         });
-        view.setBackgroundDrawable(Theme.getSelectorDrawable(false));
+        view.setBackgroundDrawable(ShieldDrawables.createMenuSelector(Theme.getColor(Theme.key_listSelector, resourcesProvider)));
     }
 
     public TextView addSubItem(int id, CharSequence text) {
         createPopupLayout();
         TextView textView = new TextView(getContext());
         ThemeBind.textColor(textView, Theme.key_actionBarDefaultSubmenuItem, resourcesProvider);
-        textView.setBackgroundDrawable(Theme.getSelectorDrawable(false));
+        textView.setBackgroundDrawable(ShieldDrawables.createMenuSelector(Theme.getColor(Theme.key_listSelector, resourcesProvider)));
         if (!LocaleController.isRTL) {
             textView.setGravity(Gravity.CENTER_VERTICAL);
         } else {
@@ -839,7 +838,7 @@ public class ActionBarMenuItem extends FrameLayout {
         if (popupLayout != null && subMenuFactory != null) {
             popupLayout.setBackground(subMenuFactory.create(popupLayout, true)
                     .setColorProvider(subMenuProvider)
-                    .setRadius(dp(12))
+                    .setRadius(dp(16))
                     .setPadding(dp(8)));
         }
     }
@@ -973,11 +972,11 @@ public class ActionBarMenuItem extends FrameLayout {
                 if (subMenuFactory != null) {
                     frameLayout.setBackground(subMenuFactory.create(popupLayout, true)
                         .setColorProvider(subMenuProvider)
-                        .setRadius(dp(12))
+                        .setRadius(dp(16))
                         .setPadding(dp(8))
                         .setHasPadding(true));
                 } else {
-                    Drawable drawable = ContextCompat.getDrawable(getContext(), R.drawable.popup_fixed_alert2).mutate();
+                    Drawable drawable = new ShieldDrawables.MenuBackgroundDrawable();
                     drawable.setColorFilter(new PorterDuffColorFilter(popupLayout.getBackgroundColor(), PorterDuff.Mode.MULTIPLY));
                     frameLayout.setBackground(drawable);
                 }

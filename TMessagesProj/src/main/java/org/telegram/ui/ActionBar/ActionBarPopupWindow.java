@@ -162,11 +162,12 @@ public class ActionBarPopupWindow extends PopupWindow {
             this.resourcesProvider = resourcesProvider;
 
             if (resId != 0) {
-                backgroundDrawable = getResources().getDrawable(resId).mutate();
+                Drawable ninePatch = getResources().getDrawable(resId).mutate();
+                ninePatch.getPadding(bgPaddings);
+                backgroundDrawable = new ShieldDrawables.MenuBackgroundDrawable(bgPaddings);
                 setPadding(dp(8), dp(8), dp(8), dp(8));
             }
             if (backgroundDrawable != null) {
-                backgroundDrawable.getPadding(bgPaddings);
                 ThemeBind.backgroundColor(this, Theme.key_actionBarDefaultSubmenuBackground, resourcesProvider);
             }
 

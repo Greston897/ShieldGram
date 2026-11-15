@@ -51,6 +51,7 @@ import org.telegram.messenger.utils.DrawableUtils;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.tgnet.tl.TL_account;
+import org.telegram.ui.ActionBar.ShieldDrawables;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.Components.AnimatedEmojiDrawable;
@@ -1033,7 +1034,7 @@ public class ProfileSearchCell extends BaseCell implements NotificationCenter.No
         if (countLayout != null) {
             final int x = countLeft - dp(5.5f);
             rect.set(x, countTop, x + countWidth + dp(11), countTop + dp(23));
-            canvas.drawRoundRect(rect, 11.5f * AndroidUtilities.density, 11.5f * AndroidUtilities.density, MessagesController.getInstance(currentAccount).isDialogMuted(dialog_id, 0) ? Theme.dialogs_countGrayPaint : Theme.dialogs_countPaint);
+            ShieldDrawables.drawGradientPill(canvas, rect, MessagesController.getInstance(currentAccount).isDialogMuted(dialog_id, 0) ? Theme.dialogs_countGrayPaint : Theme.dialogs_countPaint, AndroidUtilities.dpf2(11.5f));
             canvas.save();
             canvas.translate(countLeft, countTop + dp(4));
             countLayout.draw(canvas);

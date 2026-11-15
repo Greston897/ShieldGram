@@ -452,7 +452,7 @@ public class ActionBarMenuSubItem extends FrameLayout implements Theme.Colorable
     }
 
     public void updateBackground() {
-        setBackground(appliedSelectorBackground = Theme.createRadSelectorDrawable(selectorColor, top ? selectorRad : 0, bottom ? selectorRad : 0));
+        setBackground(appliedSelectorBackground = ShieldDrawables.createMenuSelector(selectorColor));
     }
 
     private int getThemedColor(int key) {
