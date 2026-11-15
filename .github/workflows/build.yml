@@ -6,6 +6,9 @@ on:
     branches:
       - 'arena/**'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Assemble afat release APK
@@ -14,12 +17,12 @@ jobs:
 
     steps:
       - name: Checkout sources (with submodules)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -31,10 +34,16 @@ jobs:
       - name: Install host tools (nasm, yasm)
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends nasm yasm
 
-      - name: Build release APK (afat, all ABIs)
+      - name: Quick Java compile check
         run: |
           chmod +x gradlew
-          ./gradlew :TMessagesProj_App:assembleAfatRelease --stacktrace --console=plain --no-daemon
+          set -o pipefail
+          ./gradlew :TMessagesProj:compileReleaseJavaWithJavac --console=plain --stacktrace 2>&1 | tee quick-check.log
+
+      - name: Build release APK (afat, all ABIs)
+        run: |
+          set -o pipefail
+          ./gradlew :TMessagesProj_App:assembleAfatRelease --console=plain --stacktrace 2>&1 | tee build.log
 
       - name: Collect APK
         run: |
@@ -51,9 +60,34 @@ jobs:
           compression-level: 0
 
       - name: Summary
+        if: success()
         run: |
           SIZE=$(du -h output/*.apk | cut -f1)
-          echo "### Build finished ✅" >> $GITHUB_STEP_SUMMARY
+          echo "### Build finished OK" >> $GITHUB_STEP_SUMMARY
           echo "- APK: \`app.apk\` ($SIZE)" >> $GITHUB_STEP_SUMMARY
           echo "- Version: 13.2.2 (7303)" >> $GITHUB_STEP_SUMMARY
           echo "- Signed with the bundled release keystore" >> $GITHUB_STEP_SUMMARY
+
+      # Makes the failure readable from restricted environments:
+      # annotations (via API) + the log tail committed to the branch.
+      - name: Publish failure details
+        if: failure()
+        run: |
+          LOG=build.log
+          if [ ! -f "$LOG" ]; then LOG=quick-check.log; fi
+          {
+            echo "### Build failed - relevant log excerpt"
+            echo '```'
+            awk '/What went wrong/{f=1} f{print; n++} n>60{exit}' "$LOG" 2>/dev/null | tail -n 60 || true
+            echo '--- last lines ---'
+            tail -n 40 "$LOG" 2>/dev/null || true
+            echo '```'
+          } >> $GITHUB_STEP_SUMMARY
+          EXCERPT=$((awk '/What went wrong/{f=1} f{print; n++} n>20{exit}' "$LOG" 2>/dev/null | head -n 20; tail -n 20 "$LOG" 2>/dev/null) | sed ':a;N;$!ba;s/\n/%0A/g' | head -c 3500)
+          echo "::error title=Build failed::$EXCERPT"
+          tail -c 400000 "$LOG" > ci-build-failure.log
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ci-build-failure.log || true
+          git commit -m "CI: attach build failure log [skip ci]" || true
+          git push || true
