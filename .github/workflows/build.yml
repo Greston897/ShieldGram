@@ -1,0 +1,59 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'arena/**'
+
+jobs:
+  build:
+    name: Assemble afat release APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+
+    steps:
+      - name: Checkout sources (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle (with build caching)
+        uses: gradle/actions/setup-gradle@v4
+
+      # x86 / x86_64 assembly needs nasm/yasm on the host
+      - name: Install host tools (nasm, yasm)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends nasm yasm
+
+      - name: Build release APK (afat, all ABIs)
+        run: |
+          chmod +x gradlew
+          ./gradlew :TMessagesProj_App:assembleAfatRelease --stacktrace --console=plain --no-daemon
+
+      - name: Collect APK
+        run: |
+          mkdir -p output
+          cp -v TMessagesProj_App/build/outputs/apk/afat/release/*.apk output/
+          ls -lh output/
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShieldGram-afat-release-${{ github.sha }}
+          path: output/*.apk
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Summary
+        run: |
+          SIZE=$(du -h output/*.apk | cut -f1)
+          echo "### Build finished ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- APK: \`app.apk\` ($SIZE)" >> $GITHUB_STEP_SUMMARY
+          echo "- Version: 13.2.2 (7303)" >> $GITHUB_STEP_SUMMARY
+          echo "- Signed with the bundled release keystore" >> $GITHUB_STEP_SUMMARY
