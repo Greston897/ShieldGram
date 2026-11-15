@@ -19,8 +19,10 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -102,6 +104,11 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
 
     private int lastWidth = -1;
     private int largerWidth = -1;
+
+    private boolean drawInfoPill = true;
+    private final RectF infoPillRect = new RectF();
+    private final RectF infoPillStrokeRect = new RectF();
+    private final Paint infoPillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
 
     private AnimatorSet titleAnimation;
@@ -422,8 +429,84 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
         canvas.save();
         final float s = bounce.getScale(.02f);
         canvas.scale(s, s, getPivotX(), getHeight() - ActionBar.getCurrentActionBarHeight() / 2f);
+        drawInfoPill(canvas);
         super.dispatchDraw(canvas);
         canvas.restore();
+    }
+
+    public void setInfoPillVisible(boolean value) {
+        if (drawInfoPill != value) {
+            drawInfoPill = value;
+            invalidate();
+        }
+    }
+
+    /**
+     * Chat info pill: a soft stadium-shaped panel that hugs the avatar,
+     * title and status inside the chat's top bar. Shape only — the fill and
+     * hairline border are derived from the current theme's title color,
+     * so no theme colors are changed.
+     */
+    protected void drawInfoPill(Canvas canvas) {
+        if (!drawInfoPill || getWidth() == 0 || getHeight() == 0 || titleTextView == null || getAlpha() < 0.05f) {
+            return;
+        }
+        final boolean avatarVisible = avatarImageView.getVisibility() == VISIBLE;
+
+        float contentLeft = avatarVisible ? avatarImageView.getLeft() : Math.max(0, titleTextView.getLeft() - dp(8));
+        float contentRight = titleTextView.getRight();
+        View subtitleView = getSubtitleTextView();
+        if (subtitleTextView != null && subtitleTextView.getVisibility() == VISIBLE && subtitleTextView.getRight() > contentRight) {
+            contentRight = subtitleTextView.getRight();
+        }
+        if (contentRight <= contentLeft) {
+            return;
+        }
+
+        float top, bottom;
+        if (avatarVisible) {
+            top = avatarImageView.getTop() - dpf2(3.5f);
+            bottom = avatarImageView.getBottom() + dpf2(3.5f);
+        } else {
+            top = titleTextView.getTop() + titleTextView.getPaddingTop() - dpf2(4);
+            bottom = titleTextView.getTop() + titleTextView.getPaddingTop() + titleTextView.getTextHeight() + dpf2(3);
+            if (subtitleView != null && subtitleView.getVisibility() == VISIBLE) {
+                bottom = subtitleView.getBottom() + dpf2(3);
+            }
+            if (bottom - top < dpf2(34)) {
+                float center = (top + bottom) / 2f;
+                top = center - dpf2(17);
+                bottom = center + dpf2(17);
+            }
+        }
+
+        final float padStart = avatarVisible ? dp(5) : dp(10);
+        final float padEnd = dp(7);
+        infoPillRect.set(
+            Math.max(0, contentLeft - padStart),
+            top,
+            Math.min(contentRight + padEnd, getWidth() - dpf2(2)),
+            bottom);
+        if (infoPillRect.width() <= 0 || infoPillRect.height() <= 0) {
+            return;
+        }
+        final float radius = Math.min(infoPillRect.height(), infoPillRect.width()) / 2f;
+
+        final int base = getThemedColor(Theme.key_actionBarDefaultTitle);
+        infoPillPaint.setStyle(Paint.Style.FILL);
+        infoPillPaint.setColor(Theme.multAlpha(base, 0.08f));
+        canvas.drawRoundRect(infoPillRect, radius, radius, infoPillPaint);
+
+        final float stroke = dpf2(1f);
+        if (radius > stroke && infoPillRect.width() > stroke * 2) {
+            infoPillPaint.setStyle(Paint.Style.STROKE);
+            infoPillPaint.setStrokeWidth(stroke);
+            infoPillPaint.setColor(Theme.multAlpha(base, 0.17f));
+            infoPillStrokeRect.set(infoPillRect);
+            infoPillStrokeRect.inset(stroke / 2f, stroke / 2f);
+            canvas.drawRoundRect(infoPillStrokeRect, Math.max(0, radius - stroke / 2f), Math.max(0, radius - stroke / 2f), infoPillPaint);
+            infoPillPaint.setStyle(Paint.Style.FILL);
+        }
     }
 
     @Override

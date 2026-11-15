@@ -277,10 +277,6 @@ public final class ShieldDrawables {
         private int alpha = 255;
         private ColorFilter colorFilter;
 
-        private LinearGradient shader;
-        private int shaderColor;
-        private float shaderHeight;
-
         private final float bodyInset;
         private final float bodyRadius;
 
@@ -336,7 +332,7 @@ public final class ShieldDrawables {
             drawShadowRing(canvas, AndroidUtilities.dpf2(1.5f), withAlpha(Color.BLACK, (int) ((dark ? 17 : 9) * a)));
             drawShadowRing(canvas, AndroidUtilities.dpf2(2.5f), withAlpha(Color.BLACK, (int) ((dark ? 24 : 13) * a)));
 
-            // card body with subtle vertical gradient
+            // card body — exactly the theme color (shape only, no color shift)
             bodyRect.set(rect);
             bodyRect.inset(bodyInset, bodyInset);
             if (bodyRect.isEmpty()) {
@@ -344,19 +340,8 @@ public final class ShieldDrawables {
             }
             float r = Math.min(bodyRadius, Math.min(bodyRect.width(), bodyRect.height()) / 2f);
 
-            if (shader == null || shaderColor != base || shaderHeight != bodyRect.height()) {
-                int top = lighten(base, dark ? 0.05f : 0.035f);
-                int bottom = darken(base, dark ? 0.02f : 0.03f);
-                shader = new LinearGradient(0, 0, 0, bodyRect.height(),
-                    new int[]{top, base, bottom},
-                    new float[]{0f, 0.5f, 1f}, Shader.TileMode.CLAMP);
-                shaderColor = base;
-                shaderHeight = bodyRect.height();
-            }
-            paint.setShader(shader);
-            paint.setAlpha(255);
+            paint.setColor(withAlpha(base, (int) (Color.alpha(base) * a)));
             canvas.drawRoundRect(bodyRect, r, r, paint);
-            paint.setShader(null);
 
             // hairline border, adaptive to theme brightness
             paint.setStyle(Paint.Style.STROKE);
