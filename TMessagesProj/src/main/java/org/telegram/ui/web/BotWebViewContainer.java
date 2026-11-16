@@ -34,6 +34,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
+import android.os.SystemClock;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
@@ -388,6 +389,9 @@ public abstract class BotWebViewContainer extends FrameLayout implements Notific
                     "}};";
     private long documentGeneration;
     private boolean restrictBridgeToOrigin;
+    private long botBridgeRateWindowStart;
+    private int botBridgeMessagesInWindow;
+    private static final int MAX_BOT_BRIDGE_MESSAGES_PER_SECOND = 120;
 
     private static final class WebRequestContext {
         private final BotWebViewContainer owner;
@@ -1489,9 +1493,26 @@ public abstract class BotWebViewContainer extends FrameLayout implements Notific
         }
     }
 
+    private synchronized boolean allowBotBridgeMessage() {
+        long now = SystemClock.elapsedRealtime();
+        if (botBridgeRateWindowStart == 0 || now - botBridgeRateWindowStart >= 1000) {
+            botBridgeRateWindowStart = now;
+            botBridgeMessagesInWindow = 0;
+        }
+        if (botBridgeMessagesInWindow >= MAX_BOT_BRIDGE_MESSAGES_PER_SECOND) {
+            return false;
+        }
+        botBridgeMessagesInWindow++;
+        return true;
+    }
+
     private void onBotWebMessage(WebView sourceWebView, WebMessageCompat message, Uri sourceOrigin) {
         if (sourceWebView != webView || message == null || message.getType() != WebMessageCompat.TYPE_STRING) {
             d("onBotWebMessage ignored: invalid source or payload");
+            return;
+        }
+        if (!allowBotBridgeMessage()) {
+            d("onBotWebMessage ignored: rate limit exceeded");
             return;
         }
 
