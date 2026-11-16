@@ -155,7 +155,11 @@ android {
         externalNativeBuild {
             cmake {
                 version '3.22.1'
-                arguments '-DANDROID_STL=c++_static', '-DANDROID_PLATFORM=android-23' //, '-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON'
+                // CI only (CI_USE_CCACHE=1): route C/C++ compiles through ccache so
+                // unchanged sources are served from cache instead of being recompiled.
+                def ccacheLaunchers = System.getenv('CI_USE_CCACHE') == '1' ?
+                        ['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'] : []
+                arguments '-DANDROID_STL=c++_static', '-DANDROID_PLATFORM=android-23', *ccacheLaunchers //, '-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON'
                 targets 'tmessages.49', 'twidget'
             }
         }

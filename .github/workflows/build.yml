@@ -9,6 +9,14 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI_USE_CCACHE: '1'
+  CCACHE_DIR: /home/runner/.ccache
+
 jobs:
   build:
     name: Assemble afat release APK
@@ -30,9 +38,39 @@ jobs:
       - name: Set up Gradle (with build caching)
         uses: gradle/actions/setup-gradle@v4
 
+      # ccache is content-addressed: unlike the .cxx build dir it stays valid
+      # across fresh checkouts (git sets new mtimes on every checkout, which
+      # would make ninja recompile everything). First run populates the cache,
+      # later runs with unchanged jni/ code reuse it and get much faster.
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/.ccache
+          key: ccache-v1-${{ github.run_id }}
+          restore-keys: |
+            ccache-v1-
+
+      # AGP auto-installs these into the SDK on first use; caching them
+      # skips a multi-minute download+unpack on every run
+      - name: Cache NDK and CMake
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/lib/android/sdk/ndk
+            /usr/local/lib/android/sdk/cmake
+          key: sdk-ndk-27.2.12479018-cmake-3.22.1-v1
+
       # x86 / x86_64 assembly needs nasm/yasm on the host
-      - name: Install host tools (nasm, yasm)
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends nasm yasm
+      - name: Install host tools (nasm, yasm, ccache)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends nasm yasm ccache
+
+      - name: Configure ccache
+        run: |
+          ccache --set-config=max_size=8G
+          ccache --set-config=compression=false
+          ccache --set-config=compiler_check=content
+          ccache -z
+          ccache -s
 
       - name: Quick Java compile check
         run: |
@@ -44,6 +82,7 @@ jobs:
         run: |
           set -o pipefail
           ./gradlew :TMessagesProj_App:assembleAfatRelease --console=plain --stacktrace 2>&1 | tee build.log
+          ccache -s
 
       - name: Collect APK
         run: |
@@ -54,7 +93,7 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ShieldGram-afat-release-${{ github.sha }}
+          name: StormGram-afat-release-${{ github.sha }}
           path: output/*.apk
           if-no-files-found: error
           compression-level: 0
@@ -65,8 +104,16 @@ jobs:
           SIZE=$(du -h output/*.apk | cut -f1)
           echo "### Build finished OK" >> $GITHUB_STEP_SUMMARY
           echo "- APK: \`app.apk\` ($SIZE)" >> $GITHUB_STEP_SUMMARY
+          echo "- App name: StormGram" >> $GITHUB_STEP_SUMMARY
           echo "- Version: 13.2.2 (7303)" >> $GITHUB_STEP_SUMMARY
           echo "- Signed with the bundled release keystore" >> $GITHUB_STEP_SUMMARY
+          {
+            echo '<details><summary>ccache statistics</summary>'
+            echo '```'
+            ccache -s
+            echo '```'
+            echo '</details>'
+          } >> $GITHUB_STEP_SUMMARY
 
       # Makes the failure readable from restricted environments:
       # annotations (via API) + the log tail committed to the branch.
