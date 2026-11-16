@@ -57,6 +57,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.text.LineBreaker;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Trace;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.text.Layout;
@@ -12163,6 +12164,11 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        boolean trace = Build.VERSION.SDK_INT >= 29 && Trace.isEnabled();
+        if (trace) {
+            Trace.beginSection("ChatMessageCell.onMeasure");
+        }
+        try {
         if (currentMessageObject != null && (currentMessageObject.checkLayout() || lastHeight != AndroidUtilities.displaySize.y)) {
             inLayout = true;
             MessageObject messageObject = currentMessageObject;
@@ -12185,6 +12191,11 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             isWidthAdaptive() ? getBoundsRight() - getBoundsLeft() : MeasureSpec.getSize(widthMeasureSpec),
             resultHeight
         );
+        } finally {
+            if (trace) {
+                Trace.endSection();
+            }
+        }
     }
 
     private int additionalPaddingHeight;
@@ -17319,7 +17330,17 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
     @SuppressLint("WrongCall")
     @Override
     protected void onDraw(Canvas canvas) {
-        drawInternal(canvas);
+        boolean trace = Build.VERSION.SDK_INT >= 29 && Trace.isEnabled();
+        if (trace) {
+            Trace.beginSection("ChatMessageCell.onDraw");
+        }
+        try {
+            drawInternal(canvas);
+        } finally {
+            if (trace) {
+                Trace.endSection();
+            }
+        }
     }
     public void drawInternal(Canvas canvas) {
         if (currentMessageObject == null) {
