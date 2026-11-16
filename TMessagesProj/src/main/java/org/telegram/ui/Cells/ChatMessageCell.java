@@ -4981,8 +4981,15 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
     }
 
     private void updateSelectionTextPosition() {
-        if (getDelegate() != null && getDelegate().getTextSelectionHelper() != null && getDelegate().getTextSelectionHelper().isSelected(currentMessageObject)) {
-            int textSelectionType = getDelegate().getTextSelectionHelper().getTextSelectionType(this);
+        ChatMessageCellDelegate cellDelegate = getDelegate();
+        if (cellDelegate == null) {
+            return;
+        }
+        TextSelectionHelper selectionHelper = cellDelegate.getTextSelectionHelper();
+        if (selectionHelper == null || !selectionHelper.isSelected(currentMessageObject)) {
+            return;
+        }
+        int textSelectionType = selectionHelper.getTextSelectionType(this);
             if (textSelectionType == TextSelectionHelper.ChatListTextSelectionHelper.TYPE_DESCRIPTION) {
                 int linkX;
                 if (hasGamePreview) {
@@ -4992,10 +4999,10 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                 } else {
                     linkX = unmovedTextX + dp(1);
                 }
-                getDelegate().getTextSelectionHelper().updateTextPosition(linkX + dp(10) + descriptionX, descriptionY);
+                selectionHelper.updateTextPosition(linkX + dp(10) + descriptionX, descriptionY);
             } else if (textSelectionType == TextSelectionHelper.ChatListTextSelectionHelper.TYPE_CAPTION) {
                 updateCaptionLayout();
-                getDelegate().getTextSelectionHelper().updateTextPosition((int) captionX, (int) captionY);
+                selectionHelper.updateTextPosition((int) captionX, (int) captionY);
             } else if (textSelectionType == TextSelectionHelper.ChatListTextSelectionHelper.TYPE_FACTCHECK) {
                 int x, y;
                 if (currentMessagesGroup != null && !currentMessagesGroup.isDocuments) {
@@ -5016,9 +5023,9 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                 x -= dp(1.33f);
                 y = this.factCheckY;
                 updateCaptionLayout();
-                getDelegate().getTextSelectionHelper().updateTextPosition(x + dp(10) - (factCheck != null ? factCheck.textLayoutLeft : 0), y + dp(22));
+                selectionHelper.updateTextPosition(x + dp(10) - (factCheck != null ? factCheck.textLayoutLeft : 0), y + dp(22));
             } else {
-                getDelegate().getTextSelectionHelper().updateTextPosition(textX, textY);
+                selectionHelper.updateTextPosition(textX, textY);
             }
         }
     }
