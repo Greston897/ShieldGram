@@ -214,13 +214,23 @@ public class ApplicationLoader extends Application {
 
                     boolean isSlow = isConnectionSlow();
                     for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
-                        ConnectionsManager.getInstance(a).checkConnection();
+                        ConnectionsManager connectionsManager = ConnectionsManager.getInstance(a);
+                        // A connectivity broadcast can arrive while the native transport is
+                        // still blocked on a socket from the previous network. Resume now;
+                        // checkConnection remains responsible for deciding whether a new
+                        // transport is actually needed.
+                        connectionsManager.resumeNetworkMaybe();
+                        connectionsManager.checkConnection();
                         FileLoader.getInstance(a).onNetworkChanged(isSlow);
                     }
                 }
             };
             IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-            ApplicationLoader.applicationContext.registerReceiver(networkStateReceiver, filter);
+            if (Build.VERSION.SDK_INT >= 33) {
+                ApplicationLoader.applicationContext.registerReceiver(networkStateReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+            } else {
+                ApplicationLoader.applicationContext.registerReceiver(networkStateReceiver, filter);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

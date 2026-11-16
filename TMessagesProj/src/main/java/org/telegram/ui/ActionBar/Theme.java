@@ -134,6 +134,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -7655,10 +7656,19 @@ public class Theme {
         });
     }
 
+    private static final long MAX_THEME_FILE_SIZE = 2L * 1024L * 1024L;
+    private static final int MAX_THEME_LINES = 10_000;
+
     public static SparseIntArray getThemeFileValues(File file, String assetName, String[] wallpaperLink) {
         FileInputStream stream = null;
         SparseIntArray stringMap = new SparseIntArray();
         try {
+            if (assetName != null) {
+                file = getAssetFile(assetName);
+            }
+            if (file == null || !file.isFile() || file.length() > MAX_THEME_FILE_SIZE) {
+                throw new IOException("Theme file is missing or exceeds the 2 MiB limit");
+            }
             byte[] bytes = new byte[1024];
             int currentPosition = 0;
             if (assetName != null) {
@@ -7669,11 +7679,15 @@ public class Theme {
             int read;
             boolean finished = false;
             int wallpaperFileOffset = -1;
+            int lineCount = 0;
             while ((read = stream.read(bytes)) != -1) {
                 int previousPosition = currentPosition;
                 int start = 0;
                 for (int a = 0; a < read; a++) {
                     if (bytes[a] == '\n') {
+                        if (++lineCount > MAX_THEME_LINES) {
+                            throw new IOException("Theme file exceeds the line limit");
+                        }
                         int len = a - start + 1;
                         String line = new String(bytes, start, len - 1);
                         if (line.startsWith("WLS=")) {

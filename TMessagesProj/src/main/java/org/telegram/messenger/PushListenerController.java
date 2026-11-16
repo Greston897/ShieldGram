@@ -3,6 +3,7 @@ package org.telegram.messenger;
 import static org.telegram.messenger.LocaleController.getString;
 
 import android.os.SystemClock;
+import android.os.PowerManager;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.SparseBooleanArray;
@@ -94,6 +95,17 @@ public class PushListenerController {
     }
 
     public static void processRemoteMessage(@PushType int pushType, String data, long time) {
+        // Keep the CPU awake only for the bounded push-processing window. The timeout
+        // guarantees release even if initialization or parsing fails unexpectedly.
+        try {
+            PowerManager powerManager = (PowerManager) ApplicationLoader.applicationContext.getSystemService(android.content.Context.POWER_SERVICE);
+            if (powerManager != null) {
+                PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "telegram:push_processing");
+                wakeLock.setReferenceCounted(false);
+                wakeLock.acquire(15_000L);
+            }
+        } catch (Throwable ignore) {
+        }
         String tag = pushType == PUSH_TYPE_FIREBASE ? "FCM" : "HCM";
         if (BuildVars.LOGS_ENABLED) {
             FileLog.d(tag + " PRE START PROCESSING");
