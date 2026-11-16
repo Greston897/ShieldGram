@@ -254,6 +254,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -1549,8 +1550,80 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         return handleIntent(intent, isNew, restore, fromPassword, null, true, false);
     }
 
+    private static boolean isSafeExternalUri(Uri uri, boolean allowWebAndTelegramSchemes) {
+        if (uri == null) {
+            return false;
+        }
+        String scheme = uri.getScheme();
+        if (scheme == null || "file".equalsIgnoreCase(scheme)) {
+            return false;
+        }
+        if (allowWebAndTelegramSchemes) {
+            if (!("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme) ||
+                    "tg".equalsIgnoreCase(scheme) || "ton".equalsIgnoreCase(scheme) ||
+                    "tonsite".equalsIgnoreCase(scheme) || "tc".equalsIgnoreCase(scheme) ||
+                    "tgb".equalsIgnoreCase(scheme) || "wear".equalsIgnoreCase(scheme))) {
+                return false;
+            }
+            if (("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) &&
+                    (TextUtils.isEmpty(uri.getHost()) || uri.getUserInfo() != null)) {
+                return false;
+            }
+        } else if (!"content".equalsIgnoreCase(scheme)) {
+            return false;
+        }
+        String authority = uri.getAuthority();
+        if (authority != null && authority.toLowerCase(Locale.US).startsWith(
+                ApplicationLoader.applicationContext.getPackageName().toLowerCase(Locale.US))) {
+            return false;
+        }
+        String path = Uri.decode(uri.getEncodedPath());
+        if (path != null) {
+            String normalized = path.replace('\\', '/').toLowerCase(Locale.US);
+            if (normalized.contains("/../") || normalized.endsWith("/..") ||
+                    normalized.startsWith("/data/") || normalized.equals("/data") ||
+                    normalized.startsWith("/proc/") || normalized.equals("/proc")) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @SuppressLint("Range")
     private boolean handleIntent(Intent intent, boolean isNew, boolean restore, boolean fromPassword, Browser.Progress progress, boolean rebuildFragments, boolean openedTelegram) {
+        if (intent == null) {
+            return false;
+        }
+        String incomingAction = intent.getAction();
+        if (Intent.ACTION_VIEW.equals(incomingAction) && !isSafeExternalUri(intent.getData(), true)) {
+            FileLog.w("Rejected unsafe ACTION_VIEW URI");
+            return false;
+        }
+        if (Intent.ACTION_SEND.equals(incomingAction)) {
+            try {
+                Parcelable stream = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                if (stream instanceof Uri && !isSafeExternalUri((Uri) stream, false)) {
+                    intent.removeExtra(Intent.EXTRA_STREAM);
+                }
+            } catch (RuntimeException e) {
+                intent.removeExtra(Intent.EXTRA_STREAM);
+            }
+        } else if (Intent.ACTION_SEND_MULTIPLE.equals(incomingAction)) {
+            try {
+                ArrayList<Parcelable> streams = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+                if (streams != null) {
+                    for (int i = streams.size() - 1; i >= 0; i--) {
+                        Parcelable stream = streams.get(i);
+                        if (!(stream instanceof Uri) || !isSafeExternalUri((Uri) stream, false)) {
+                            streams.remove(i);
+                        }
+                    }
+                    intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, streams);
+                }
+            } catch (RuntimeException e) {
+                intent.removeExtra(Intent.EXTRA_STREAM);
+            }
+        }
         if (GiftInfoBottomSheet.handleIntent(intent, progress)) {
             return true;
         }
