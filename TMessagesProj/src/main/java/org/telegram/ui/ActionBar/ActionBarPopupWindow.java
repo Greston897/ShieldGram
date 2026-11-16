@@ -295,6 +295,10 @@ public class ActionBarPopupWindow extends PopupWindow {
         public void setBackgroundColor(int color) {
             if (backgroundColor != color && backgroundDrawable != null) {
                 backgroundDrawable.setColorFilter(new PorterDuffColorFilter(backgroundColor = color, PorterDuff.Mode.MULTIPLY));
+                if (backgroundDrawable instanceof ShieldDrawables.TintedDrawable) {
+                    ((ShieldDrawables.TintedDrawable) backgroundDrawable).setTintColor(color);
+                }
+                invalidate();
             }
         }
 

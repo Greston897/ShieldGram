@@ -8,7 +8,6 @@ import android.graphics.LinearGradient;
 import android.graphics.Outline;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
-import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
@@ -53,6 +52,15 @@ public final class ShieldDrawables {
 
     private static int withAlpha(int color, int alpha) {
         return ColorUtils.setAlphaComponent(color, Math.max(0, Math.min(255, alpha)));
+    }
+
+    /**
+     * Implemented by ShieldGram drawables that receive their theme color
+     * as an explicit tint (PorterDuffColorFilter has no public color getter,
+     * so callers that would apply a MULTIPLY filter use this instead).
+     */
+    public interface TintedDrawable {
+        void setTintColor(int color);
     }
 
     //==========================================================================================
@@ -140,15 +148,16 @@ public final class ShieldDrawables {
      * Color is provided by the theme tab line color; intensity is fully controlled by
      * {@link #setAlpha(int)} so existing fade animations keep working.
      */
-    public static class PillDrawable extends Drawable {
+    public static class PillDrawable extends Drawable implements TintedDrawable {
 
         private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final RectF rect = new RectF();
         private final RectF tempRect = new RectF();
 
         private int color = Color.WHITE;
+        private int tintColor = Color.WHITE;
+        private boolean hasTint;
         private int alpha = 255;
-        private ColorFilter colorFilter;
 
         private LinearGradient shader;
         private int shaderColor;
@@ -156,18 +165,24 @@ public final class ShieldDrawables {
         private float shaderHeight;
 
         public void setColor(int value) {
-            colorFilter = null;
+            hasTint = false;
             if (color != value) {
                 color = value;
                 invalidateSelf();
             }
         }
 
-        private int baseColor() {
-            if (colorFilter instanceof PorterDuffColorFilter) {
-                return ((PorterDuffColorFilter) colorFilter).getColor();
+        @Override
+        public void setTintColor(int color) {
+            hasTint = true;
+            if (tintColor != color) {
+                tintColor = color;
+                invalidateSelf();
             }
-            return color;
+        }
+
+        private int baseColor() {
+            return hasTint ? tintColor : color;
         }
 
         @Override
@@ -244,9 +259,7 @@ public final class ShieldDrawables {
         }
 
         @Override
-        public void setColorFilter(@Nullable ColorFilter filter) {
-            colorFilter = filter;
-            invalidateSelf();
+        public void setColorFilter(@Nullable ColorFilter colorFilter) {
         }
 
         @Override
@@ -260,13 +273,12 @@ public final class ShieldDrawables {
     //==========================================================================================
 
     /**
-     * Replaces the old popup 9-patch: a rounded card with a subtle vertical gradient,
+     * Replaces the old popup 9-patch: a rounded card with the exact theme color,
      * a thin adaptive border (light on dark themes, dark on light ones) and a soft
-     * multi-ring shadow. The background color arrives through a MULTIPLY
-     * {@link PorterDuffColorFilter} — we read it directly so the card always matches
-     * the current theme, including animated theme transitions.
+     * multi-ring shadow. The theme color arrives through {@link #setTintColor(int)},
+     * so the card always matches the current theme, including animated transitions.
      */
-    public static class MenuBackgroundDrawable extends Drawable {
+    public static class MenuBackgroundDrawable extends Drawable implements TintedDrawable {
 
         private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final RectF rect = new RectF();
@@ -275,7 +287,8 @@ public final class ShieldDrawables {
         private final Rect pad = new Rect();
 
         private int alpha = 255;
-        private ColorFilter colorFilter;
+        private int tintColor = Color.WHITE;
+        private boolean hasTint;
 
         private final float bodyInset;
         private final float bodyRadius;
@@ -292,11 +305,17 @@ public final class ShieldDrawables {
             bodyRadius = AndroidUtilities.dpf2(16f);
         }
 
-        private int baseColor() {
-            if (colorFilter instanceof PorterDuffColorFilter) {
-                return ((PorterDuffColorFilter) colorFilter).getColor();
+        @Override
+        public void setTintColor(int color) {
+            hasTint = true;
+            if (tintColor != color) {
+                tintColor = color;
+                invalidateSelf();
             }
-            return Color.WHITE;
+        }
+
+        private int baseColor() {
+            return hasTint ? tintColor : Color.WHITE;
         }
 
         private void drawShadowRing(Canvas canvas, float inset, int color) {
@@ -368,9 +387,7 @@ public final class ShieldDrawables {
         }
 
         @Override
-        public void setColorFilter(@Nullable ColorFilter filter) {
-            colorFilter = filter;
-            invalidateSelf();
+        public void setColorFilter(@Nullable ColorFilter colorFilter) {
         }
 
         @Override

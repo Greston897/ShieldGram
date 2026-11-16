@@ -976,8 +976,8 @@ public class ActionBarMenuItem extends FrameLayout {
                         .setPadding(dp(8))
                         .setHasPadding(true));
                 } else {
-                    Drawable drawable = new ShieldDrawables.MenuBackgroundDrawable();
-                    drawable.setColorFilter(new PorterDuffColorFilter(popupLayout.getBackgroundColor(), PorterDuff.Mode.MULTIPLY));
+                    ShieldDrawables.MenuBackgroundDrawable drawable = new ShieldDrawables.MenuBackgroundDrawable();
+                    drawable.setTintColor(popupLayout.getBackgroundColor());
                     frameLayout.setBackground(drawable);
                 }
             }

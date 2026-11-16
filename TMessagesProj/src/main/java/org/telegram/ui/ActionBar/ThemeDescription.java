@@ -770,6 +770,8 @@ public class ThemeDescription {
             Theme.setSelectorDrawableColor((Drawable) object, color, (changeFlags & FLAG_DRAWABLESELECTEDSTATE) != 0);
         } else if (object instanceof GradientDrawable) {
             ((GradientDrawable) object).setColor(color);
+        } else if (object instanceof ShieldDrawables.TintedDrawable) {
+            ((ShieldDrawables.TintedDrawable) object).setTintColor(color);
         } else {
             ((Drawable) object).setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.MULTIPLY));
         }
