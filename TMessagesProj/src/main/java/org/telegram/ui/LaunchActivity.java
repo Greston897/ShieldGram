@@ -1573,18 +1573,33 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
             return false;
         }
         String authority = uri.getAuthority();
-        if (authority != null && authority.toLowerCase(Locale.US).startsWith(
-                ApplicationLoader.applicationContext.getPackageName().toLowerCase(Locale.US))) {
-            return false;
-        }
-        String path = Uri.decode(uri.getEncodedPath());
-        if (path != null) {
-            String normalized = path.replace('\\', '/').toLowerCase(Locale.US);
-            if (normalized.contains("/../") || normalized.endsWith("/..") ||
-                    normalized.startsWith("/data/") || normalized.equals("/data") ||
-                    normalized.startsWith("/proc/") || normalized.equals("/proc")) {
+        String packageName = ApplicationLoader.applicationContext.getPackageName().toLowerCase(Locale.US);
+        if (authority != null) {
+            String normalizedAuthority = authority.toLowerCase(Locale.US);
+            if (normalizedAuthority.equals(packageName) || normalizedAuthority.startsWith(packageName + ".")) {
                 return false;
             }
+        }
+        String encodedPath = uri.getEncodedPath();
+        String path = encodedPath == null ? null : Uri.decode(encodedPath);
+        // Decode a bounded number of times so double-encoded traversal is rejected too.
+        for (int i = 0; path != null && i < 3; i++) {
+            String normalized = path.replace('\\', '/').toLowerCase(Locale.US);
+            if (normalized.equals("/data") || normalized.startsWith("/data/") ||
+                    normalized.equals("/proc") || normalized.startsWith("/proc/")) {
+                return false;
+            }
+            String[] pathSegments = normalized.split("/");
+            for (String segment : pathSegments) {
+                if ("..".equals(segment)) {
+                    return false;
+                }
+            }
+            String decodedAgain = Uri.decode(path);
+            if (decodedAgain.equals(path)) {
+                break;
+            }
+            path = decodedAgain;
         }
         return true;
     }
