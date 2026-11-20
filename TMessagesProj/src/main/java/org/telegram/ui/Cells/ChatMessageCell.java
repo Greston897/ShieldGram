@@ -4990,43 +4990,38 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             return;
         }
         int textSelectionType = selectionHelper.getTextSelectionType(this);
-            if (textSelectionType == TextSelectionHelper.ChatListTextSelectionHelper.TYPE_DESCRIPTION) {
-                int linkX;
-                if (hasGamePreview) {
-                    linkX = unmovedTextX - dp(10);
-                } else if (hasInvoicePreview) {
-                    linkX = unmovedTextX + dp(1);
-                } else {
-                    linkX = unmovedTextX + dp(1);
-                }
-                selectionHelper.updateTextPosition(linkX + dp(10) + descriptionX, descriptionY);
-            } else if (textSelectionType == TextSelectionHelper.ChatListTextSelectionHelper.TYPE_CAPTION) {
-                updateCaptionLayout();
-                selectionHelper.updateTextPosition((int) captionX, (int) captionY);
-            } else if (textSelectionType == TextSelectionHelper.ChatListTextSelectionHelper.TYPE_FACTCHECK) {
-                int x, y;
-                if (currentMessagesGroup != null && !currentMessagesGroup.isDocuments) {
-                    x = (int) captionX;
-                } else if (currentMessageObject.isOutOwner()) {
-                    x = backgroundDrawableLeft + dp(12) + getExtraTextX();
-                    if (currentMessageObject.type == MessageObject.TYPE_EMOJIS) {
-                        x -= Math.max(0, x + Math.max(replyNameWidth, replyTextWidth) + dp(14) - AndroidUtilities.displaySize.x);
-                    }
-                } else {
-                    if (mediaBackground) {
-                        x = backgroundDrawableLeft + dp(12) + getExtraTextX();
-                    } else {
-                        x = backgroundDrawableLeft + dp(drawPinnedBottom ? 12 : 18) + getExtraTextX();
-                    }
-                }
-                x += transitionParams.deltaLeft;
-                x -= dp(1.33f);
-                y = this.factCheckY;
-                updateCaptionLayout();
-                selectionHelper.updateTextPosition(x + dp(10) - (factCheck != null ? factCheck.textLayoutLeft : 0), y + dp(22));
+        if (textSelectionType == TextSelectionHelper.ChatListTextSelectionHelper.TYPE_DESCRIPTION) {
+            int linkX;
+            if (hasGamePreview) {
+                linkX = unmovedTextX - dp(10);
             } else {
-                selectionHelper.updateTextPosition(textX, textY);
+                linkX = unmovedTextX + dp(1);
             }
+            selectionHelper.updateTextPosition(linkX + dp(10) + descriptionX, descriptionY);
+        } else if (textSelectionType == TextSelectionHelper.ChatListTextSelectionHelper.TYPE_CAPTION) {
+            updateCaptionLayout();
+            selectionHelper.updateTextPosition((int) captionX, (int) captionY);
+        } else if (textSelectionType == TextSelectionHelper.ChatListTextSelectionHelper.TYPE_FACTCHECK) {
+            int x, y;
+            if (currentMessagesGroup != null && !currentMessagesGroup.isDocuments) {
+                x = (int) captionX;
+            } else if (currentMessageObject.isOutOwner()) {
+                x = backgroundDrawableLeft + dp(12) + getExtraTextX();
+                if (currentMessageObject.type == MessageObject.TYPE_EMOJIS) {
+                    x -= Math.max(0, x + Math.max(replyNameWidth, replyTextWidth) + dp(14) - AndroidUtilities.displaySize.x);
+                }
+            } else if (mediaBackground) {
+                x = backgroundDrawableLeft + dp(12) + getExtraTextX();
+            } else {
+                x = backgroundDrawableLeft + dp(drawPinnedBottom ? 12 : 18) + getExtraTextX();
+            }
+            x += transitionParams.deltaLeft;
+            x -= dp(1.33f);
+            y = this.factCheckY;
+            updateCaptionLayout();
+            selectionHelper.updateTextPosition(x + dp(10) - (factCheck != null ? factCheck.textLayoutLeft : 0), y + dp(22));
+        } else {
+            selectionHelper.updateTextPosition(textX, textY);
         }
     }
 
