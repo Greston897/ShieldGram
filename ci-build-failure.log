@@ -1,0 +1,597 @@
+Downloading https://services.gradle.org/distributions/gradle-8.13-bin.zip
+.............10%.............20%.............30%.............40%.............50%.............60%.............70%.............80%.............90%.............100%
+
+Welcome to Gradle 8.13!
+
+Here are the highlights of this release:
+ - Daemon JVM auto-provisioning
+ - Enhancements for Scala plugin and JUnit testing
+ - Improvements for build authors and plugin developers
+
+For more details see https://docs.gradle.org/8.13/release-notes.html
+
+Starting a Gradle Daemon (subsequent builds will be faster)
+> Task :buildSrc:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :buildSrc:pluginDescriptors
+> Task :buildSrc:processResources
+
+> Task :buildSrc:compileKotlin
+w: file:///home/runner/work/ShieldGram/ShieldGram/buildSrc/src/main/kotlin/com/example/GenerateSchemeTask.kt:68:13 Variable 'tlSchemaFilter' is never used
+w: file:///home/runner/work/ShieldGram/ShieldGram/buildSrc/src/main/kotlin/com/example/GenerateSchemeTask.kt:77:13 Variable 'totalHistory' is never used
+w: file:///home/runner/work/ShieldGram/ShieldGram/buildSrc/src/main/kotlin/com/example/GenerateSchemeTask.kt:112:13 Variable 'enumTypes' is never used
+w: file:///home/runner/work/ShieldGram/ShieldGram/buildSrc/src/main/kotlin/com/example/GenerateSchemeTask.kt:118:13 Variable 'schemaAllIds' is never used
+w: file:///home/runner/work/ShieldGram/ShieldGram/buildSrc/src/main/kotlin/org/telegram/plugin/TelegramBuildAppPlugin.kt:115:49 Parameter 'layers' is never used, could be renamed to _
+w: file:///home/runner/work/ShieldGram/ShieldGram/buildSrc/src/main/kotlin/org/telegram/tlrpc/SchemeTlValidator.kt:14:36 Parameter 'c' is never used, could be renamed to _
+w: file:///home/runner/work/ShieldGram/ShieldGram/buildSrc/src/main/kotlin/org/telegram/tlrpc/telegram/TelegramCodeParser.kt:48:63 'asInt(): Int' is deprecated. Deprecated in Java
+
+> Task :buildSrc:compileJava NO-SOURCE
+> Task :buildSrc:compileGroovy NO-SOURCE
+> Task :buildSrc:classes
+> Task :buildSrc:jar
+
+> Configure project :jlatexmath
+WARNING: The option setting 'android.r8.optimizedResourceShrinking=true' is experimental.
+The current default is 'false'.
+WARNING: The option setting 'android.defaults.buildfeatures.buildconfig=true' is deprecated.
+The current default is 'false'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+To keep using this feature, add the following to your module-level build.gradle files:
+    android.buildFeatures.buildConfig = true
+or from Android Studio, click: `Refactor` > `Migrate BuildConfig to Gradle Build Files`.
+
+> Configure project :TMessagesProj
+The google-services Gradle plugin needs to be applied on a project with com.android.application or com.android.dynamic-feature.
+
+> Configure project :TMessagesProj_AppHuawei
+--W- Build Environment: AGConnect plugin version is: 1.9.1.301, Gradle version is: 8.13, Android Plugin version is: 8.13.2
+--I- Using the AGConnect-Config file: /home/runner/work/ShieldGram/ShieldGram/TMessagesProj_AppHuawei/agconnect-services.json
+--W- The variant: afatDebug, Use the json file: /home/runner/work/ShieldGram/ShieldGram/TMessagesProj_AppHuawei/agconnect-services.json
+--I- Using the AGConnect-Config file: /home/runner/work/ShieldGram/ShieldGram/TMessagesProj_AppHuawei/agconnect-services.json
+--W- The variant: afatRelease, Use the json file: /home/runner/work/ShieldGram/ShieldGram/TMessagesProj_AppHuawei/agconnect-services.json
+
+> Task :TMessagesProj_Modules:media3:media-lib-common:preBuild UP-TO-DATE
+> Task :jlatexmath:preBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-session:preBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-common:preReleaseBuild UP-TO-DATE
+> Task :jlatexmath:preReleaseBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-session:preReleaseBuild UP-TO-DATE
+> Task :TMessagesProj:checkVisibility
+> Task :TMessagesProj:preBuild
+> Task :TMessagesProj:preReleaseBuild
+> Task :TMessagesProj_Modules:media3:media-lib-common:generateReleaseBuildConfig
+> Task :jlatexmath:generateReleaseBuildConfig
+> Task :TMessagesProj:generateReleaseBuildConfig
+> Task :TMessagesProj_Modules:media3:media-lib-common:generateReleaseResValues
+> Task :TMessagesProj_Modules:media3:media-lib-common:generateReleaseResources
+> Task :jlatexmath:generateReleaseResValues
+> Task :TMessagesProj:generateReleaseLocalizationUtilsJava
+> Task :jlatexmath:generateReleaseResources
+> Task :TMessagesProj:generateReleaseResValues
+> Task :TMessagesProj_Modules:media3:media-lib-common:packageReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-common:processReleaseNavigationResources
+> Task :jlatexmath:packageReleaseResources
+> Task :jlatexmath:processReleaseNavigationResources
+> Task :TMessagesProj:generateReleaseResources
+> Task :jlatexmath:javaPreCompileRelease
+> Task :TMessagesProj_Modules:media3:media-lib-common:parseReleaseLocalResources
+> Task :jlatexmath:parseReleaseLocalResources
+> Task :jlatexmath:generateReleaseRFile
+> Task :TMessagesProj_Modules:media3:media-lib-common:generateReleaseRFile
+> Task :TMessagesProj_Modules:media3:media-lib-common:javaPreCompileRelease
+> Task :TMessagesProj_Modules:media3:media-lib-session:compileReleaseAidl
+> Task :TMessagesProj_Modules:media3:media-lib-container:preBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-container:preReleaseBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-container:generateReleaseBuildConfig
+> Task :TMessagesProj_Modules:media3:media-lib-container:generateReleaseResValues
+> Task :TMessagesProj_Modules:media3:media-lib-container:generateReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-container:packageReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-container:processReleaseNavigationResources
+> Task :TMessagesProj:packageReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-container:parseReleaseLocalResources
+> Task :TMessagesProj_Modules:media3:media-lib-container:generateReleaseRFile
+> Task :TMessagesProj_Modules:media3:media-lib-container:javaPreCompileRelease
+> Task :TMessagesProj_Modules:media3:media-lib-database:preBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-database:preReleaseBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-database:generateReleaseBuildConfig
+> Task :TMessagesProj_Modules:media3:media-lib-database:generateReleaseResValues
+> Task :TMessagesProj_Modules:media3:media-lib-database:generateReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-database:packageReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-database:processReleaseNavigationResources
+> Task :TMessagesProj_Modules:media3:media-lib-database:parseReleaseLocalResources
+
+> Task :jlatexmath:compileReleaseJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: /home/runner/work/ShieldGram/ShieldGram/TMessagesProj/lib/jlatexmath/jlatexmath/src/main/java/org/scilab/forge/jlatexmath/PredefinedTeXFormulaParser.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :TMessagesProj_Modules:media3:media-lib-database:generateReleaseRFile
+> Task :TMessagesProj_Modules:media3:media-lib-database:javaPreCompileRelease
+> Task :TMessagesProj_Modules:media3:media-lib-datasource:preBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-datasource:preReleaseBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-datasource:generateReleaseBuildConfig
+> Task :TMessagesProj_Modules:media3:media-lib-datasource:generateReleaseResValues
+> Task :TMessagesProj_Modules:media3:media-lib-datasource:generateReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-datasource:packageReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-datasource:processReleaseNavigationResources
+> Task :TMessagesProj_Modules:media3:media-lib-datasource:parseReleaseLocalResources
+> Task :TMessagesProj_Modules:media3:media-lib-datasource:generateReleaseRFile
+> Task :TMessagesProj_Modules:media3:media-lib-datasource:javaPreCompileRelease
+> Task :TMessagesProj_Modules:media3:media-lib-decoder:preBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-decoder:preReleaseBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-decoder:generateReleaseBuildConfig
+> Task :TMessagesProj_Modules:media3:media-lib-decoder:generateReleaseResValues
+> Task :TMessagesProj_Modules:media3:media-lib-decoder:generateReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-decoder:packageReleaseResources
+> Task :jlatexmath:bundleLibCompileToJarRelease
+> Task :TMessagesProj_Modules:media3:media-lib-decoder-ffmpeg:preBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-decoder-ffmpeg:preReleaseBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-decoder:processReleaseNavigationResources
+> Task :TMessagesProj_Modules:media3:media-lib-decoder-ffmpeg:generateReleaseBuildConfig
+> Task :TMessagesProj_Modules:media3:media-lib-decoder-ffmpeg:generateReleaseResValues
+> Task :TMessagesProj_Modules:media3:media-lib-decoder:javaPreCompileRelease
+> Task :TMessagesProj_Modules:media3:media-lib-decoder-ffmpeg:generateReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-decoder:parseReleaseLocalResources
+> Task :TMessagesProj_Modules:media3:media-lib-decoder-ffmpeg:packageReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-decoder-ffmpeg:processReleaseNavigationResources
+> Task :TMessagesProj_Modules:media3:media-lib-decoder:generateReleaseRFile
+> Task :TMessagesProj_Modules:media3:media-lib-decoder-ffmpeg:javaPreCompileRelease
+> Task :TMessagesProj_Modules:media3:media-lib-decoder-ffmpeg:parseReleaseLocalResources
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer:preBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer:preReleaseBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer:generateReleaseBuildConfig
+> Task :TMessagesProj_Modules:media3:media-lib-decoder-ffmpeg:generateReleaseRFile
+> Task :TMessagesProj_Modules:media3:media-lib-extractor:preBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-extractor:preReleaseBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer:generateReleaseResValues
+> Task :TMessagesProj_Modules:media3:media-lib-extractor:generateReleaseBuildConfig
+> Task :TMessagesProj_Modules:media3:media-lib-extractor:generateReleaseResValues
+> Task :TMessagesProj_Modules:media3:media-lib-extractor:generateReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-extractor:packageReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-extractor:processReleaseNavigationResources
+> Task :TMessagesProj_Modules:media3:media-lib-extractor:parseReleaseLocalResources
+> Task :TMessagesProj_Modules:media3:media-lib-extractor:generateReleaseRFile
+> Task :TMessagesProj_Modules:media3:media-lib-extractor:javaPreCompileRelease
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-dash:preBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-dash:preReleaseBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer:generateReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-dash:generateReleaseBuildConfig
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-dash:generateReleaseResValues
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-dash:generateReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-dash:packageReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-dash:processReleaseNavigationResources
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-dash:parseReleaseLocalResources
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-dash:generateReleaseRFile
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-dash:javaPreCompileRelease
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-hls:preBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-hls:preReleaseBuild UP-TO-DATE
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-hls:generateReleaseBuildConfig
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-hls:generateReleaseResValues
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-hls:generateReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-hls:packageReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-hls:processReleaseNavigationResources
+
+> Task :TMessagesProj_Modules:media3:media-lib-common:compileReleaseJavaWithJavac
+warning: unknown enum constant Level.FULL
+  reason: class file for com.google.j2objc.annotations.ReflectionSupport$Level not found
+
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-hls:parseReleaseLocalResources
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-hls:generateReleaseRFile
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer:packageReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer:processReleaseNavigationResources
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-hls:javaPreCompileRelease
+> Task :TMessagesProj_Modules:media3:media-lib-session:generateReleaseBuildConfig
+> Task :TMessagesProj_Modules:media3:media-lib-session:generateReleaseResValues
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer:parseReleaseLocalResources
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer:javaPreCompileRelease
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer:generateReleaseRFile
+> Task :TMessagesProj_Modules:media3:media-lib-session:generateReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-session:packageReleaseResources
+> Task :TMessagesProj_Modules:media3:media-lib-session:processReleaseNavigationResources
+> Task :TMessagesProj_Modules:media3:media-lib-session:javaPreCompileRelease
+> Task :TMessagesProj_Modules:media3:media-lib-session:parseReleaseLocalResources
+> Task :TMessagesProj_Modules:media3:media-lib-session:generateReleaseRFile
+
+> Task :TMessagesProj_Modules:media3:media-lib-common:compileReleaseJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+1 warning
+
+> Task :TMessagesProj_Modules:media3:media-lib-common:bundleLibCompileToJarRelease
+
+> Task :TMessagesProj_Modules:media3:media-lib-decoder:compileReleaseJavaWithJavac
+warning: unknown enum constant MigrationStatus.STRICT
+  reason: class file for kotlin.annotations.jvm.MigrationStatus not found
+1 warning
+
+> Task :TMessagesProj_Modules:media3:media-lib-decoder:bundleLibCompileToJarRelease
+> Task :TMessagesProj_Modules:media3:media-lib-database:compileReleaseJavaWithJavac
+> Task :TMessagesProj_Modules:media3:media-lib-database:bundleLibCompileToJarRelease
+
+> Task :TMessagesProj_Modules:media3:media-lib-container:compileReleaseJavaWithJavac
+warning: unknown enum constant MigrationStatus.STRICT
+  reason: class file for kotlin.annotations.jvm.MigrationStatus not found
+1 warning
+
+> Task :TMessagesProj_Modules:media3:media-lib-container:bundleLibCompileToJarRelease
+> Task :TMessagesProj_Modules:media3:media-lib-datasource:compileReleaseJavaWithJavac
+> Task :TMessagesProj_Modules:media3:media-lib-datasource:bundleLibCompileToJarRelease
+
+> Task :TMessagesProj_Modules:media3:media-lib-extractor:compileReleaseJavaWithJavac
+warning: unknown enum constant When.MAYBE
+  reason: class file for javax.annotation.meta.When not found
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+1 warning
+
+> Task :TMessagesProj_Modules:media3:media-lib-extractor:bundleLibCompileToJarRelease
+
+> Task :TMessagesProj_Modules:media3:media-lib-session:compileReleaseJavaWithJavac
+warning: unknown enum constant When.MAYBE
+  reason: class file for javax.annotation.meta.When not found
+warning: unknown enum constant Level.FULL
+  reason: class file for com.google.j2objc.annotations.ReflectionSupport$Level not found
+warning: unknown enum constant MigrationStatus.STRICT
+  reason: class file for kotlin.annotations.jvm.MigrationStatus not found
+
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer:compileReleaseKotlin NO-SOURCE
+
+> Task :TMessagesProj_Modules:media3:media-lib-session:compileReleaseJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+3 warnings
+
+> Task :TMessagesProj_Modules:media3:media-lib-session:bundleLibCompileToJarRelease
+
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer:compileReleaseJavaWithJavac
+warning: unknown enum constant Level.FULL
+  reason: class file for com.google.j2objc.annotations.ReflectionSupport$Level not found
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+1 warning
+
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer:bundleLibCompileToJarRelease
+
+> Task :TMessagesProj:compileReleaseAidl
+WARNING: [Processor] Library '/home/runner/.gradle/caches/modules-2/files-2.1/com.google.android.gms/play-services-cast-framework/21.4.0/c48f09b1c439b395ce46bc0d1c187913819f8c7f/play-services-cast-framework-21.4.0.aar' contains references to both AndroidX and old support library. This seems like the library is partially migrated. Jetifier will try to rewrite the library anyway.
+ Example of androidX reference: 'androidx/core/app/TaskStackBuilder'
+ Example of support library reference: 'android/support/v4/media/session/MediaSessionCompat$Token'
+
+> Task :TMessagesProj_Modules:media3:media-lib-decoder-ffmpeg:compileReleaseJavaWithJavac
+Note: /home/runner/work/ShieldGram/ShieldGram/TMessagesProj_Modules/media/libraries/decoder_ffmpeg/src/main/java/androidx/media3/decoder/ffmpeg/ExperimentalFfmpegVideoDecoder.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :TMessagesProj_Modules:media3:media-lib-decoder-ffmpeg:bundleLibCompileToJarRelease
+
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-hls:compileReleaseJavaWithJavac
+warning: unknown enum constant When.MAYBE
+  reason: class file for javax.annotation.meta.When not found
+Note: /home/runner/work/ShieldGram/ShieldGram/TMessagesProj_Modules/media/libraries/exoplayer_hls/src/main/java/androidx/media3/exoplayer/hls/HlsMediaSource.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+1 warning
+
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-dash:compileReleaseJavaWithJavac
+warning: unknown enum constant When.MAYBE
+  reason: class file for javax.annotation.meta.When not found
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+1 warning
+
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-hls:bundleLibCompileToJarRelease
+> Task :TMessagesProj_Modules:media3:media-lib-exoplayer-dash:bundleLibCompileToJarRelease
+
+> Task :TMessagesProj:compileReleaseAidl
+WARNING: [Processor] Library '/home/runner/.gradle/caches/modules-2/files-2.1/androidx.car.app/app/1.4.0/406ebf5913d8c23ff636e5ef54d306560e2b5de5/app-1.4.0.aar' contains references to both AndroidX and old support library. This seems like the library is partially migrated. Jetifier will try to rewrite the library anyway.
+ Example of androidX reference: 'androidx/car/app/media/IMediaPlaybackHost'
+ Example of support library reference: 'android/support/v4/media/session/MediaSessionCompat$Token'
+
+> Task :TMessagesProj:processReleaseNavigationResources
+> Task :TMessagesProj:javaPreCompileRelease
+> Task :TMessagesProj:parseReleaseLocalResources
+> Task :TMessagesProj:generateReleaseRFile
+
+> Task :TMessagesProj:compileReleaseJavaWithJavac
+/home/runner/work/ShieldGram/ShieldGram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java:4992: error: cannot find symbol
+        int textSelectionType = selectionHelper.getTextSelectionType(this);
+                                               ^
+  symbol:   method getTextSelectionType(ChatMessageCell)
+  location: variable selectionHelper of type TextSelectionHelper
+/home/runner/work/ShieldGram/ShieldGram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java:5000: error: cannot find symbol
+            selectionHelper.updateTextPosition(linkX + dp(10) + descriptionX, descriptionY);
+                           ^
+  symbol:   method updateTextPosition(int,int)
+  location: variable selectionHelper of type TextSelectionHelper
+/home/runner/work/ShieldGram/ShieldGram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java:5003: error: cannot find symbol
+            selectionHelper.updateTextPosition((int) captionX, (int) captionY);
+                           ^
+  symbol:   method updateTextPosition(int,int)
+  location: variable selectionHelper of type TextSelectionHelper
+/home/runner/work/ShieldGram/ShieldGram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java:5022: error: cannot find symbol
+            selectionHelper.updateTextPosition(x + dp(10) - (factCheck != null ? factCheck.textLayoutLeft : 0), y + dp(22));
+                           ^
+  symbol:   method updateTextPosition(int,int)
+  location: variable selectionHelper of type TextSelectionHelper
+/home/runner/work/ShieldGram/ShieldGram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java:5024: error: cannot find symbol
+            selectionHelper.updateTextPosition(textX, textY);
+                           ^
+  symbol:   method updateTextPosition(int,int)
+  location: variable selectionHelper of type TextSelectionHelper
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+5 errors
+
+> Task :TMessagesProj:compileReleaseJavaWithJavac FAILED
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1795215761007.json
+
+[Incubating] Problems report is available at: file:///home/runner/work/ShieldGram/ShieldGram/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':TMessagesProj:compileReleaseJavaWithJavac'.
+> Compilation failed; see the compiler output below.
+  /home/runner/work/ShieldGram/ShieldGram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java:4992: error: cannot find symbol
+          int textSelectionType = selectionHelper.getTextSelectionType(this);
+                                                 ^
+    symbol:   method getTextSelectionType(ChatMessageCell)
+    location: variable selectionHelper of type TextSelectionHelper
+  /home/runner/work/ShieldGram/ShieldGram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java:5000: error: cannot find symbol
+              selectionHelper.updateTextPosition(linkX + dp(10) + descriptionX, descriptionY);
+                             ^
+    symbol:   method updateTextPosition(int,int)
+    location: variable selectionHelper of type TextSelectionHelper
+  /home/runner/work/ShieldGram/ShieldGram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java:5003: error: cannot find symbol
+              selectionHelper.updateTextPosition((int) captionX, (int) captionY);
+                             ^
+    symbol:   method updateTextPosition(int,int)
+    location: variable selectionHelper of type TextSelectionHelper
+  /home/runner/work/ShieldGram/ShieldGram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java:5022: error: cannot find symbol
+              selectionHelper.updateTextPosition(x + dp(10) - (factCheck != null ? factCheck.textLayoutLeft : 0), y + dp(22));
+                             ^
+    symbol:   method updateTextPosition(int,int)
+    location: variable selectionHelper of type TextSelectionHelper
+  /home/runner/work/ShieldGram/ShieldGram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java:5024: error: cannot find symbol
+              selectionHelper.updateTextPosition(textX, textY);
+                             ^
+    symbol:   method updateTextPosition(int,int)
+    location: variable selectionHelper of type TextSelectionHelper
+  Note: Some input files use or override a deprecated API.
+  Note: Recompile with -Xlint:deprecation for details.
+  Note: Some input files use unchecked or unsafe operations.
+  Note: Recompile with -Xlint:unchecked for details.
+  5 errors
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights.
+
+* Exception is:
+org.gradle.api.tasks.TaskExecutionException: Execution failed for task ':TMessagesProj:compileReleaseJavaWithJavac'.
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.lambda$executeIfValid$1(ExecuteActionsTaskExecuter.java:130)
+	at org.gradle.internal.Try$Failure.ifSuccessfulOrElse(Try.java:293)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:128)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.execute(ExecuteActionsTaskExecuter.java:116)
+	at org.gradle.api.internal.tasks.execution.ProblemsTaskPathTrackingTaskExecuter.execute(ProblemsTaskPathTrackingTaskExecuter.java:40)
+	at org.gradle.api.internal.tasks.execution.FinalizePropertiesTaskExecuter.execute(FinalizePropertiesTaskExecuter.java:46)
+	at org.gradle.api.internal.tasks.execution.ResolveTaskExecutionModeExecuter.execute(ResolveTaskExecutionModeExecuter.java:51)
+	at org.gradle.api.internal.tasks.execution.SkipTaskWithNoActionsExecuter.execute(SkipTaskWithNoActionsExecuter.java:57)
+	at org.gradle.api.internal.tasks.execution.SkipOnlyIfTaskExecuter.execute(SkipOnlyIfTaskExecuter.java:74)
+	at org.gradle.api.internal.tasks.execution.CatchExceptionTaskExecuter.execute(CatchExceptionTaskExecuter.java:36)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.executeTask(EventFiringTaskExecuter.java:77)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:55)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:52)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter.execute(EventFiringTaskExecuter.java:52)
+	at org.gradle.execution.plan.LocalTaskNodeExecutor.execute(LocalTaskNodeExecutor.java:42)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:331)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:318)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.lambda$execute$0(DefaultTaskExecutionGraph.java:314)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:85)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:314)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:303)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.execute(DefaultPlanExecutor.java:459)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:376)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
+Caused by: org.gradle.api.internal.tasks.compile.CompilationFailedException: Compilation failed; see the compiler output below.
+/home/runner/work/ShieldGram/ShieldGram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java:4992: error: cannot find symbol
+        int textSelectionType = selectionHelper.getTextSelectionType(this);
+                                               ^
+  symbol:   method getTextSelectionType(ChatMessageCell)
+  location: variable selectionHelper of type TextSelectionHelper
+/home/runner/work/ShieldGram/ShieldGram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java:5000: error: cannot find symbol
+            selectionHelper.updateTextPosition(linkX + dp(10) + descriptionX, descriptionY);
+                           ^
+  symbol:   method updateTextPosition(int,int)
+  location: variable selectionHelper of type TextSelectionHelper
+/home/runner/work/ShieldGram/ShieldGram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java:5003: error: cannot find symbol
+            selectionHelper.updateTextPosition((int) captionX, (int) captionY);
+                           ^
+  symbol:   method updateTextPosition(int,int)
+  location: variable selectionHelper of type TextSelectionHelper
+/home/runner/work/ShieldGram/ShieldGram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java:5022: error: cannot find symbol
+            selectionHelper.updateTextPosition(x + dp(10) - (factCheck != null ? factCheck.textLayoutLeft : 0), y + dp(22));
+                           ^
+  symbol:   method updateTextPosition(int,int)
+  location: variable selectionHelper of type TextSelectionHelper
+/home/runner/work/ShieldGram/ShieldGram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java:5024: error: cannot find symbol
+            selectionHelper.updateTextPosition(textX, textY);
+                           ^
+  symbol:   method updateTextPosition(int,int)
+  location: variable selectionHelper of type TextSelectionHelper
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+5 errors
+	at org.gradle.api.internal.tasks.compile.JdkJavaCompiler.execute(JdkJavaCompiler.java:89)
+	at org.gradle.api.internal.tasks.compile.JdkJavaCompiler.execute(JdkJavaCompiler.java:50)
+	at org.gradle.api.internal.tasks.compile.NormalizingJavaCompiler.delegateAndHandleErrors(NormalizingJavaCompiler.java:98)
+	at org.gradle.api.internal.tasks.compile.NormalizingJavaCompiler.execute(NormalizingJavaCompiler.java:52)
+	at org.gradle.api.internal.tasks.compile.NormalizingJavaCompiler.execute(NormalizingJavaCompiler.java:38)
+	at org.gradle.api.internal.tasks.compile.AnnotationProcessorDiscoveringCompiler.execute(AnnotationProcessorDiscoveringCompiler.java:52)
+	at org.gradle.api.internal.tasks.compile.AnnotationProcessorDiscoveringCompiler.execute(AnnotationProcessorDiscoveringCompiler.java:38)
+	at org.gradle.api.internal.tasks.compile.ModuleApplicationNameWritingCompiler.execute(ModuleApplicationNameWritingCompiler.java:46)
+	at org.gradle.api.internal.tasks.compile.ModuleApplicationNameWritingCompiler.execute(ModuleApplicationNameWritingCompiler.java:36)
+	at org.gradle.jvm.toolchain.internal.DefaultToolchainJavaCompiler.execute(DefaultToolchainJavaCompiler.java:57)
+	at org.gradle.api.tasks.compile.JavaCompile.lambda$createToolchainCompiler$3(JavaCompile.java:206)
+	at org.gradle.api.internal.tasks.compile.CleaningJavaCompiler.execute(CleaningJavaCompiler.java:53)
+	at org.gradle.api.internal.tasks.compile.incremental.IncrementalCompilerFactory.lambda$createRebuildAllCompiler$0(IncrementalCompilerFactory.java:55)
+	at org.gradle.api.internal.tasks.compile.incremental.SelectiveCompiler.execute(SelectiveCompiler.java:70)
+	at org.gradle.api.internal.tasks.compile.incremental.SelectiveCompiler.execute(SelectiveCompiler.java:44)
+	at org.gradle.api.internal.tasks.compile.incremental.IncrementalResultStoringCompiler.execute(IncrementalResultStoringCompiler.java:66)
+	at org.gradle.api.internal.tasks.compile.incremental.IncrementalResultStoringCompiler.execute(IncrementalResultStoringCompiler.java:52)
+	at org.gradle.api.internal.tasks.compile.CompileJavaBuildOperationReportingCompiler$1.call(CompileJavaBuildOperationReportingCompiler.java:64)
+	at org.gradle.api.internal.tasks.compile.CompileJavaBuildOperationReportingCompiler$1.call(CompileJavaBuildOperationReportingCompiler.java:48)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+	at org.gradle.api.internal.tasks.compile.CompileJavaBuildOperationReportingCompiler.execute(CompileJavaBuildOperationReportingCompiler.java:48)
+	at org.gradle.api.tasks.compile.JavaCompile.performCompilation(JavaCompile.java:224)
+	at org.gradle.api.tasks.compile.JavaCompile.performIncrementalCompilation(JavaCompile.java:165)
+	at org.gradle.api.tasks.compile.JavaCompile.compile(JavaCompile.java:150)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at org.gradle.internal.reflect.JavaMethod.invoke(JavaMethod.java:125)
+	at org.gradle.api.internal.project.taskfactory.IncrementalTaskAction.doExecute(IncrementalTaskAction.java:45)
+	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.execute(StandardTaskAction.java:51)
+	at org.gradle.api.internal.project.taskfactory.IncrementalTaskAction.execute(IncrementalTaskAction.java:26)
+	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.execute(StandardTaskAction.java:29)
+	at org.gradle.api.internal.tasks.execution.TaskExecution$3.run(TaskExecution.java:244)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:30)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:27)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:48)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeAction(TaskExecution.java:229)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeActions(TaskExecution.java:212)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeWithPreviousOutputFiles(TaskExecution.java:195)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.execute(TaskExecution.java:162)
+	at org.gradle.internal.execution.steps.ExecuteStep.executeInternal(ExecuteStep.java:105)
+	at org.gradle.internal.execution.steps.ExecuteStep.access$000(ExecuteStep.java:44)
+	at org.gradle.internal.execution.steps.ExecuteStep$1.call(ExecuteStep.java:59)
+	at org.gradle.internal.execution.steps.ExecuteStep$1.call(ExecuteStep.java:56)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+	at org.gradle.internal.execution.steps.ExecuteStep.execute(ExecuteStep.java:56)
+	at org.gradle.internal.execution.steps.ExecuteStep.execute(ExecuteStep.java:44)
+	at org.gradle.internal.execution.steps.CancelExecutionStep.execute(CancelExecutionStep.java:42)
+	at org.gradle.internal.execution.steps.TimeoutStep.executeWithoutTimeout(TimeoutStep.java:75)
+	at org.gradle.internal.execution.steps.TimeoutStep.execute(TimeoutStep.java:55)
+	at org.gradle.internal.execution.steps.PreCreateOutputParentsStep.execute(PreCreateOutputParentsStep.java:50)
+	at org.gradle.internal.execution.steps.PreCreateOutputParentsStep.execute(PreCreateOutputParentsStep.java:28)
+	at org.gradle.internal.execution.steps.RemovePreviousOutputsStep.execute(RemovePreviousOutputsStep.java:67)
+	at org.gradle.internal.execution.steps.RemovePreviousOutputsStep.execute(RemovePreviousOutputsStep.java:37)
+	at org.gradle.internal.execution.steps.BroadcastChangingOutputsStep.execute(BroadcastChangingOutputsStep.java:61)
+	at org.gradle.internal.execution.steps.BroadcastChangingOutputsStep.execute(BroadcastChangingOutputsStep.java:26)
+	at org.gradle.internal.execution.steps.CaptureOutputsAfterExecutionStep.execute(CaptureOutputsAfterExecutionStep.java:69)
+	at org.gradle.internal.execution.steps.CaptureOutputsAfterExecutionStep.execute(CaptureOutputsAfterExecutionStep.java:46)
+	at org.gradle.internal.execution.steps.ResolveInputChangesStep.execute(ResolveInputChangesStep.java:40)
+	at org.gradle.internal.execution.steps.ResolveInputChangesStep.execute(ResolveInputChangesStep.java:29)
+	at org.gradle.internal.execution.steps.BuildCacheStep.executeWithoutCache(BuildCacheStep.java:189)
+	at org.gradle.internal.execution.steps.BuildCacheStep.lambda$execute$1(BuildCacheStep.java:75)
+	at org.gradle.internal.Either$Right.fold(Either.java:175)
+	at org.gradle.internal.execution.caching.CachingState.fold(CachingState.java:62)
+	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:73)
+	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:48)
+	at org.gradle.internal.execution.steps.StoreExecutionStateStep.execute(StoreExecutionStateStep.java:46)
+	at org.gradle.internal.execution.steps.StoreExecutionStateStep.execute(StoreExecutionStateStep.java:35)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.executeBecause(SkipUpToDateStep.java:75)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.lambda$execute$2(SkipUpToDateStep.java:53)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:53)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:35)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:37)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:27)
+	at org.gradle.internal.execution.steps.ResolveIncrementalCachingStateStep.executeDelegate(ResolveIncrementalCachingStateStep.java:49)
+	at org.gradle.internal.execution.steps.ResolveIncrementalCachingStateStep.executeDelegate(ResolveIncrementalCachingStateStep.java:27)
+	at org.gradle.internal.execution.steps.AbstractResolveCachingStateStep.execute(AbstractResolveCachingStateStep.java:71)
+	at org.gradle.internal.execution.steps.AbstractResolveCachingStateStep.execute(AbstractResolveCachingStateStep.java:39)
+	at org.gradle.internal.execution.steps.ResolveChangesStep.execute(ResolveChangesStep.java:65)
+	at org.gradle.internal.execution.steps.ResolveChangesStep.execute(ResolveChangesStep.java:36)
+	at org.gradle.internal.execution.steps.ValidateStep.execute(ValidateStep.java:107)
+	at org.gradle.internal.execution.steps.ValidateStep.execute(ValidateStep.java:56)
+	at org.gradle.internal.execution.steps.AbstractCaptureStateBeforeExecutionStep.execute(AbstractCaptureStateBeforeExecutionStep.java:64)
+	at org.gradle.internal.execution.steps.AbstractCaptureStateBeforeExecutionStep.execute(AbstractCaptureStateBeforeExecutionStep.java:43)
+	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.executeWithNonEmptySources(AbstractSkipEmptyWorkStep.java:125)
+	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.execute(AbstractSkipEmptyWorkStep.java:61)
+	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.execute(AbstractSkipEmptyWorkStep.java:36)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsStartedStep.execute(MarkSnapshottingInputsStartedStep.java:38)
+	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.execute(LoadPreviousExecutionStateStep.java:36)
+	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.execute(LoadPreviousExecutionStateStep.java:23)
+	at org.gradle.internal.execution.steps.HandleStaleOutputsStep.execute(HandleStaleOutputsStep.java:75)
+	at org.gradle.internal.execution.steps.HandleStaleOutputsStep.execute(HandleStaleOutputsStep.java:41)
+	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.lambda$execute$0(AssignMutableWorkspaceStep.java:35)
+	at org.gradle.api.internal.tasks.execution.TaskExecution$4.withWorkspace(TaskExecution.java:289)
+	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.execute(AssignMutableWorkspaceStep.java:31)
+	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.execute(AssignMutableWorkspaceStep.java:22)
+	at org.gradle.internal.execution.steps.ChoosePipelineStep.execute(ChoosePipelineStep.java:40)
+	at org.gradle.internal.execution.steps.ChoosePipelineStep.execute(ChoosePipelineStep.java:23)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.lambda$execute$2(ExecuteWorkBuildOperationFiringStep.java:67)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:67)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:39)
+	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:46)
+	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:34)
+	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:48)
+	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:35)
+	at org.gradle.internal.execution.impl.DefaultExecutionEngine$1.execute(DefaultExecutionEngine.java:61)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:127)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.execute(ExecuteActionsTaskExecuter.java:116)
+	at org.gradle.api.internal.tasks.execution.ProblemsTaskPathTrackingTaskExecuter.execute(ProblemsTaskPathTrackingTaskExecuter.java:40)
+	at org.gradle.api.internal.tasks.execution.FinalizePropertiesTaskExecuter.execute(FinalizePropertiesTaskExecuter.java:46)
+	at org.gradle.api.internal.tasks.execution.ResolveTaskExecutionModeExecuter.execute(ResolveTaskExecutionModeExecuter.java:51)
+	at org.gradle.api.internal.tasks.execution.SkipTaskWithNoActionsExecuter.execute(SkipTaskWithNoActionsExecuter.java:57)
+	at org.gradle.api.internal.tasks.execution.SkipOnlyIfTaskExecuter.execute(SkipOnlyIfTaskExecuter.java:74)
+	at org.gradle.api.internal.tasks.execution.CatchExceptionTaskExecuter.execute(CatchExceptionTaskExecuter.java:36)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.executeTask(EventFiringTaskExecuter.java:77)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:55)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:52)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter.execute(EventFiringTaskExecuter.java:52)
+	at org.gradle.execution.plan.LocalTaskNodeExecutor.execute(LocalTaskNodeExecutor.java:42)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:331)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:318)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.lambda$execute$0(DefaultTaskExecutionGraph.java:314)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:85)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:314)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:303)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.execute(DefaultPlanExecutor.java:459)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:376)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
+
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 3m 5s
+137 actionable tasks: 137 executed
