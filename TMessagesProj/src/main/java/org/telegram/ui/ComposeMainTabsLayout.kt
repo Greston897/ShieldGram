@@ -2,6 +2,7 @@ package org.telegram.ui
 
 import android.content.Context
 import android.view.View
+import android.widget.FrameLayout
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
@@ -23,8 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.UiComposable
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.AbstractComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import org.telegram.messenger.AndroidUtilities
@@ -37,7 +38,7 @@ import org.telegram.ui.Components.glass.GlassTabView
  * New navigation layout and visibility behavior live in Compose; the old custom AnimatedLinearLayout is
  * retained for other, not-yet-migrated tab strips.
  */
-class ComposeMainTabsLayout(context: Context, @Suppress("UNUSED_PARAMETER") resourcesProvider: Theme.ResourcesProvider?) : AbstractComposeView(context) {
+class ComposeMainTabsLayout(context: Context, @Suppress("UNUSED_PARAMETER") resourcesProvider: Theme.ResourcesProvider?) : FrameLayout(context) {
     private class Entry(val view: View, initiallyVisible: Boolean) {
         var visible by mutableStateOf(initiallyVisible)
         var animateVisibility by mutableStateOf(false)
@@ -46,15 +47,27 @@ class ComposeMainTabsLayout(context: Context, @Suppress("UNUSED_PARAMETER") reso
     private val entries = mutableStateListOf<Entry>()
     private var maxWidthPx by mutableStateOf(0)
 
+    private inner class ComposeContent(context: Context) : AbstractComposeView(context) {
+        init {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindowOrReleasedFromPool)
+        }
+
+        @Composable
+        @UiComposable
+        override fun Content() {
+            TabsContent()
+        }
+    }
+
     init {
         clipChildren = false
         clipToPadding = false
-        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindowOrReleasedFromPool)
+        addView(ComposeContent(context), LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
     }
 
     @Composable
     @UiComposable
-    override fun Content() {
+    private fun TabsContent() {
         val density = LocalDensity.current
         val maxOuterWidth = with(density) { maxWidthPx.toDp() }
         val rowMaxWidth = (maxOuterWidth - 24.dp).coerceAtLeast(0.dp)
@@ -98,9 +111,9 @@ class ComposeMainTabsLayout(context: Context, @Suppress("UNUSED_PARAMETER") reso
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val requestedWidth = View.MeasureSpec.getSize(widthMeasureSpec)
+        val requestedWidth = MeasureSpec.getSize(widthMeasureSpec)
         if (maxWidthPx > 0 && requestedWidth > maxWidthPx) {
-            super.onMeasure(View.MeasureSpec.makeMeasureSpec(maxWidthPx, View.MeasureSpec.EXACTLY), heightMeasureSpec)
+            super.onMeasure(MeasureSpec.makeMeasureSpec(maxWidthPx, MeasureSpec.EXACTLY), heightMeasureSpec)
         } else {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         }
