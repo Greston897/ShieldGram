@@ -96,6 +96,8 @@ jobs:
             tail -n 40 "$LOG" 2>/dev/null || true
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+          EXCERPT=$((awk '/What went wrong/{f=1} f{print; n++} n>20{exit}' "$LOG" 2>/dev/null | head -n 20; tail -n 20 "$LOG" 2>/dev/null) | sed ':a;N;$!ba;s/\n/%0A/g' | head -c 3500)
+          echo "::error title=Build failed::$EXCERPT"
           tail -c 400000 "$LOG" > ci-build-failure.log
 
       - name: Upload failure log
