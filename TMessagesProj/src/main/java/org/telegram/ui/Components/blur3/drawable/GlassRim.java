@@ -20,6 +20,8 @@ public final class GlassRim {
     public static final float LIGHT_TOP = 0;
     /** The light from the top-left: the top-left corner lit, the bottom-right one opposite. */
     public static final float LIGHT_TOP_LEFT = 45;
+    /** A warm, sunlike reflection from the upper-left, less diagonal than {@link #LIGHT_TOP_LEFT}. */
+    public static final float LIGHT_SUN = 30;
 
     /** Degrees, 0 from straight above, positive towards the left: the crescents' shift is (sin, cos) of it. */
     public final float lightAngle;

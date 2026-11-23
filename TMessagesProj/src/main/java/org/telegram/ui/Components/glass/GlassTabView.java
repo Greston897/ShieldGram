@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.RectF;
@@ -58,6 +59,12 @@ public class GlassTabView extends FrameLayout implements MainTabsLayout.Tab, Fac
     private BackupImageView backupImageView;
     private Theme.ResourcesProvider resourcesProvider;
     private final Paint paintCounterBackground = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint selectedRimPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint selectedGlintPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Path selectedClipPath = new Path();
+    private final PorterDuffColorFilter[] iconColorFilters = new PorterDuffColorFilter[17];
+    private int iconFilterFromColor, iconFilterToColor;
+    private PorterDuffColorFilter lastAppliedIconFilter;
     private final AnimatedTextView.AnimatedTextDrawable counter;
 
     private static final int ANIMATOR_ID_IS_SELECTED = 0;
@@ -154,13 +161,42 @@ public class GlassTabView extends FrameLayout implements MainTabsLayout.Tab, Fac
         if (selectedFactor > 0 && !skipDrawSelector) {
             final float alpha = AnimatorUtils.DECELERATE_INTERPOLATOR.getInterpolation(selectedFactor);
 
-            paintCounterBackground.setColor(Theme.multAlpha(colorSelected, 0.09f * alpha));
+            paintCounterBackground.setColor(Theme.multAlpha(colorSelected, 0.15f * alpha));
             tmpRectF.set(0, 0, viewWidth, getHeight());
             final float r = Math.min(tmpRectF.width(), tmpRectF.height()) / 2f;
             final float s = lerp(0.6f, 1, selectedFactor) * MathUtils.clamp(attachScale, 0, 1);
             canvas.save();
             canvas.scale(s, s, tmpRectF.centerX(), tmpRectF.centerY());
             canvas.drawRoundRect(tmpRectF, r, r, paintCounterBackground);
+
+            // A fine, theme-aware rim and a restrained top glint give the active tab
+            // a glass lens cue without adding a shader, bitmap, or continuous animation.
+            selectedRimPaint.setStyle(Paint.Style.STROKE);
+            selectedRimPaint.setStrokeWidth(dp(0.7f));
+            selectedRimPaint.setColor(Theme.multAlpha(
+                    Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider), 0.16f * alpha));
+            tmpRectF.inset(dp(0.55f), dp(0.55f));
+            canvas.drawRoundRect(tmpRectF, Math.max(0, r - dp(0.55f)), Math.max(0, r - dp(0.55f)), selectedRimPaint);
+
+            // A single short sweep rides the existing selection animation. It is clipped
+            // to the pill and uses two strokes instead of a per-frame shader or bitmap.
+            final float shine = (float) Math.sin(Math.PI * MathUtils.clamp(selectedFactor, 0f, 1f));
+            if (shine > 0.01f) {
+                selectedClipPath.rewind();
+                selectedClipPath.addRoundRect(0, 0, viewWidth, getHeight(), r, r, Path.Direction.CW);
+                canvas.save();
+                canvas.clipPath(selectedClipPath);
+                final float shineX = lerp(-dp(18), viewWidth + dp(18), selectedFactor);
+                selectedGlintPaint.setStyle(Paint.Style.STROKE);
+                selectedGlintPaint.setStrokeCap(Paint.Cap.ROUND);
+                selectedGlintPaint.setColor(Theme.multAlpha(Color.WHITE, 0.18f * shine));
+                selectedGlintPaint.setStrokeWidth(dp(8));
+                canvas.drawLine(shineX - dp(10), getHeight() + dp(6), shineX + dp(10), -dp(6), selectedGlintPaint);
+                selectedGlintPaint.setColor(Theme.multAlpha(Color.WHITE, 0.42f * shine));
+                selectedGlintPaint.setStrokeWidth(dp(1.1f));
+                canvas.drawLine(shineX - dp(10), getHeight() + dp(6), shineX + dp(10), -dp(6), selectedGlintPaint);
+                canvas.restore();
+            }
             canvas.restore();
         }
 
@@ -252,21 +288,37 @@ public class GlassTabView extends FrameLayout implements MainTabsLayout.Tab, Fac
     private boolean needUpdateBackupViewColor;
 
     private void applyColors() {
-        final int color = ColorUtils.blendARGB(colorDefault, colorSelected, isSelectedAnimator.getFloatValue());
-        final int colorText = ColorUtils.blendARGB(colorDefault, colorSelectedText, isSelectedAnimator.getFloatValue());
+        final float selection = isSelectedAnimator.getFloatValue();
+        final int colorText = ColorUtils.blendARGB(colorDefault, colorSelectedText, selection);
 
-        final PorterDuffColorFilter filter = new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN);
-        if (backupImageView != null && needUpdateBackupViewColor) {
-            backupImageView.setColorFilter(filter);
-            backupImageView.invalidate();
+        // Selection ticks every frame. Quantize only the icon tint and retain its 17
+        // PorterDuff filters, avoiding a new native color-filter object on each tick.
+        if (iconFilterFromColor != colorDefault || iconFilterToColor != colorSelected) {
+            for (int i = 0; i < iconColorFilters.length; i++) {
+                iconColorFilters[i] = null;
+            }
+            iconFilterFromColor = colorDefault;
+            iconFilterToColor = colorSelected;
         }
-        imageView.setColorFilter(filter);
+        final int step = Math.round(MathUtils.clamp(selection, 0f, 1f) * (iconColorFilters.length - 1));
+        PorterDuffColorFilter filter = iconColorFilters[step];
+        if (filter == null) {
+            final int iconColor = ColorUtils.blendARGB(colorDefault, colorSelected, step / (float) (iconColorFilters.length - 1));
+            iconColorFilters[step] = filter = new PorterDuffColorFilter(iconColor, PorterDuff.Mode.SRC_IN);
+        }
+        if (filter != lastAppliedIconFilter) {
+            if (backupImageView != null && needUpdateBackupViewColor) {
+                backupImageView.setColorFilter(filter);
+            }
+            imageView.setColorFilter(filter);
+            lastAppliedIconFilter = filter;
+        }
         textView.setTextColor(colorText);
     }
 
     @Override
     public void updateColors() {
-        // every theme frame: applyColors allocates a color filter, so only when a color changed
+        // Theme updates are frequent; rebuild the icon tint cache only when its endpoints change.
         if (colorDefault != Theme.getColor(Theme.key_glass_tabUnselected, resourcesProvider) ||
             colorSelected != Theme.getColor(Theme.key_glass_tabSelected, resourcesProvider) ||
             colorSelectedText != Theme.getColor(Theme.key_glass_tabSelectedText, resourcesProvider)) {

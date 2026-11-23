@@ -26,6 +26,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Worker callbacks ({@link #onWorkerSignal}, {@link #onWorkerFrame}) never touch UI state directly.
  */
 public final class WidgetSandboxSession {
+    // Fail closed while the November 2026 QuickJS RCE claims have no public technical fix to verify.
+    // The pinned engine includes the published QuickJS memory-safety backports, but that is not enough to
+    // establish safety against the newer reports. Remove only after auditing a patched upstream revision.
+    private static final boolean QUICKJS_RCE_SECURITY_HOLD = true;
+
     /** UI-thread notifications for whoever shows the session. */
     public interface Listener {
         /** A new frame was published; its height may differ from the previous one. */
@@ -321,12 +326,13 @@ public final class WidgetSandboxSession {
      * widgets off. No native session is created then, so no widget code runs in the client. Any thread.
      */
     public static boolean disabledByConfig() {
+        boolean disabled = QUICKJS_RCE_SECURITY_HOLD;
         for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
             if (UserConfig.getInstance(a).isClientActivated() && AppGlobalConfig.getInstance(a).widgetsDisabled.get()) {
-                return true;
+                disabled = true;
             }
         }
-        return false;
+        return disabled;
     }
 
     /**

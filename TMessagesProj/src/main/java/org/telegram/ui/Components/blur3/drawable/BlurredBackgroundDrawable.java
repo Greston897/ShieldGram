@@ -349,7 +349,7 @@ public class BlurredBackgroundDrawable extends GlassDrawable implements Theme.Co
     private final GlassRimRenderer rimRenderer = new GlassRimRenderer();
     @Nullable private GlassRim rim;
     @Nullable private GlassRim rimFromColors;
-    private float lightAngle = GlassRim.LIGHT_TOP;
+    private float lightAngle = GlassRim.LIGHT_SUN;
 
     /** A rim of its own (e.g. {@link GlassRim#qrBig()}); null for the crescents and the outline of the color provider. */
     public BlurredBackgroundDrawable setRim(@Nullable GlassRim rim) {

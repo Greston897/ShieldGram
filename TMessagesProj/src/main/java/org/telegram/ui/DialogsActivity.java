@@ -8707,6 +8707,18 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         }
 
         if (!DialogObject.isUserDialog(dialogId) || !UserObject.isUserSelf(getMessagesController().getUser(dialogId))) {
+            if (!getMessagesController().isDialogMuted(dialogId, 0)) {
+                ActionBarMenuSubItem snoozeItem = new ActionBarMenuSubItem(getParentActivity(), false, false);
+                snoozeItem.setTextAndIcon(LocaleController.getString(R.string.MuteFor1h), R.drawable.msg_mute);
+                snoozeItem.setMinimumWidth(160);
+                snoozeItem.setOnClickListener(e -> {
+                    getNotificationsController().setDialogNotificationsSettings(dialogId, 0, NotificationsController.SETTING_MUTE_HOUR);
+                    BulletinFactory.createMuteBulletin(this, NotificationsController.SETTING_MUTE_HOUR).show();
+                    finishPreviewFragment();
+                });
+                previewMenu[0].addView(snoozeItem);
+            }
+
             ActionBarMenuSubItem muteItem = new ActionBarMenuSubItem(getParentActivity(), false, false);
             if (!getMessagesController().isDialogMuted(dialogId, 0)) {
                 muteItem.setTextAndIcon(LocaleController.getString(R.string.Mute), R.drawable.msg_mute);

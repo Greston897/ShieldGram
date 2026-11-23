@@ -146,10 +146,10 @@ public final class WidgetEngineService extends Service {
 
     /**
      * The process's seccomp filter (twidget-seccomp.cpp): audit logs the calls the filter is for ("TwidgetSeccomp" in
-     * logcat) and changes nothing else; enforce kills the process on them. Audit until the logs from the devices say
-     * the engine never makes them.
+     * logcat) and changes nothing else; enforce blocks or kills the process for the listed dangerous calls. Keep
+     * enforcement enabled as defense in depth when widgets are re-enabled after the QuickJS security review.
      */
-    private static final boolean SECCOMP_ENFORCE = false;
+    private static final boolean SECCOMP_ENFORCE = true;
 
     private static native int installSeccomp(boolean enforce);
     private static native void seccompSelfTest();

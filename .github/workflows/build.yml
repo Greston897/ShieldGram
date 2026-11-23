@@ -1,0 +1,107 @@
+name: Build ShieldGram APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'arena/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI_USE_CCACHE: '1'
+  CCACHE_DIR: /home/runner/.ccache
+
+jobs:
+  build:
+    name: Compile Compose and assemble afat APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+
+    steps:
+      - name: Checkout sources (with submodules)
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/.ccache
+          key: ccache-v1-${{ github.run_id }}
+          restore-keys: |
+            ccache-v1-
+
+      - name: Cache Android NDK and CMake
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/lib/android/sdk/ndk
+            /usr/local/lib/android/sdk/cmake
+          key: sdk-ndk-27.2.12479018-cmake-3.22.1-v1
+
+      - name: Install native build tools
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends nasm yasm ccache
+
+      - name: Configure ccache
+        run: |
+          ccache --set-config=max_size=8G
+          ccache --set-config=compiler_check=content
+          ccache -z
+
+      - name: Compile Kotlin Compose and Java sources
+        run: |
+          chmod +x gradlew
+          set -o pipefail
+          ./gradlew :TMessagesProj:compileReleaseKotlin :TMessagesProj:compileReleaseJavaWithJavac --console=plain --stacktrace 2>&1 | tee compile.log
+
+      - name: Assemble Android APK
+        run: |
+          set -o pipefail
+          ./gradlew :TMessagesProj_App:assembleAfatRelease --console=plain --stacktrace 2>&1 | tee build.log
+          ccache -s
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShieldGram-afat-${{ github.sha }}
+          path: TMessagesProj_App/build/outputs/apk/afat/release/*.apk
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Publish failure details
+        if: failure()
+        run: |
+          LOG=build.log
+          if [ ! -f "$LOG" ]; then LOG=compile.log; fi
+          {
+            echo "### Build failed - relevant log excerpt"
+            echo '```'
+            awk '/What went wrong/{f=1} f{print; n++} n>60{exit}' "$LOG" 2>/dev/null | tail -n 60 || true
+            echo '--- last lines ---'
+            tail -n 40 "$LOG" 2>/dev/null || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          tail -c 400000 "$LOG" > ci-build-failure.log
+
+      - name: Upload failure log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compose-build-failure-${{ github.sha }}
+          path: ci-build-failure.log
+          if-no-files-found: ignore

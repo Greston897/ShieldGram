@@ -373,6 +373,13 @@ public class SharedConfig {
             -1853602818 // SDM439
     };
 
+    // Mid-range SoCs which the generic core-count / average-frequency heuristic otherwise
+    // promotes to HIGH. Exynos 1380 is used by Galaxy A26 and several other mid-range phones.
+    private static final String[] AVERAGE_SOC = {
+            "S5E8835", // EXYNOS 1380 model code
+            "Exynos 1380" // descriptive SOC_MODEL on some firmware
+    };
+
     static {
         loadConfig();
     }
@@ -1664,6 +1671,11 @@ public class SharedConfig {
             for (int i = 0; i < LOW_SOC.length; ++i) {
                 if (LOW_SOC[i] == hash) {
                     return PERFORMANCE_CLASS_LOW;
+                }
+            }
+            for (int i = 0; i < AVERAGE_SOC.length; ++i) {
+                if (AVERAGE_SOC[i].equalsIgnoreCase(Build.SOC_MODEL)) {
+                    return PERFORMANCE_CLASS_AVERAGE;
                 }
             }
         }

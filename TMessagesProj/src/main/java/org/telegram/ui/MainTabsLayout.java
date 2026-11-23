@@ -43,7 +43,8 @@ public class MainTabsLayout extends AnimatedLinearLayout {
         this.resourcesProvider = resourcesProvider;
     }
 
-    private static final float[] PASS_TEXT_SIZES_DP = {12f, 12f, 10f};
+    // Keep labels at a readable size on narrow layouts; give up side padding and ellipsize instead of shrinking to 10dp.
+    private static final float[] PASS_TEXT_SIZES_DP = {12f, 12f, 12f};
     private static final int[] PASS_PADDINGS_DP = {16, 8, 4};
 
     private int maxWidthPx;
